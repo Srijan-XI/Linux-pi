@@ -155,6 +155,214 @@ class PackageHandler:
         
         return f"{size_bytes:.2f} TB"
     
+    def verify_package(self, package_path, checksum=None, checksum_type='sha256', check_signature=False):
+        """
+        Comprehensive package verification
+        
+        Args:
+            package_path: Path to the package file
+            checksum: Expected checksum value (optional)
+            checksum_type: Type of checksum ('sha256' or 'md5')
+            check_signature: Whether to verify GPG signature
+        
+        Returns:
+            tuple: (success: bool, message: str, details: dict)
+        """
+        verification_results = {
+            'file_exists': False,
+            'file_size': 0,
+            'checksum_match': None,
+            'signature_valid': None,
+            'integrity_ok': False
+        }
+        
+        try:
+            # 1. Check if file exists
+            if not os.path.exists(package_path):
+                return False, "Package file not found", verification_results
+            
+            verification_results['file_exists'] = True
+            
+            # 2. Get file size
+            file_size = os.path.getsize(package_path)
+            verification_results['file_size'] = file_size
+            
+            # Check if file is suspiciously small (< 1KB)
+            if file_size < 1024:
+                return False, f"Package file too small ({file_size} bytes). May be corrupted.", verification_results
+            
+            # 3. Verify checksum if provided
+            if checksum:
+                calculated_checksum = self._calculate_checksum(package_path, checksum_type)
+                
+                if calculated_checksum.lower() == checksum.lower():
+                    verification_results['checksum_match'] = True
+                else:
+                    verification_results['checksum_match'] = False
+                    return False, f"{checksum_type.upper()} checksum mismatch!\\nExpected: {checksum}\\nGot: {calculated_checksum}", verification_results
+            
+            # 4. Verify GPG signature if requested
+            if check_signature:
+                sig_valid, sig_msg = self._verify_gpg_signature(package_path)
+                verification_results['signature_valid'] = sig_valid
+                
+                if not sig_valid:
+                    return False, f"GPG signature verification failed: {sig_msg}", verification_results
+            
+            # 5. Basic integrity check (try to read package metadata)
+            integrity_ok, integrity_msg = self._check_package_integrity(package_path)
+            verification_results['integrity_ok'] = integrity_ok
+            
+            if not integrity_ok:
+                return False, f"Package integrity check failed: {integrity_msg}", verification_results
+            
+            # All checks passed
+            success_msg = "✅ Package verification successful\\n"
+            if checksum:
+                success_msg += f"✓ {checksum_type.upper()} checksum verified\\n"
+            if check_signature:
+                success_msg += "✓ GPG signature valid\\n"
+            success_msg += "✓ Package integrity OK"
+            
+            return True, success_msg, verification_results
+            
+        except Exception as e:
+            return False, f"Verification error: {str(e)}", verification_results
+    
+    def _calculate_checksum(self, file_path, checksum_type='sha256'):
+        """Calculate file checksum"""
+        import hashlib
+        
+        if checksum_type.lower() == 'sha256':
+            hasher = hashlib.sha256()
+        elif checksum_type.lower() == 'md5':
+            hasher = hashlib.md5()
+        else:
+            raise ValueError(f"Unsupported checksum type: {checksum_type}")
+        
+        with open(file_path, 'rb') as f:
+            # Read in chunks to handle large files
+            while chunk := f.read(8192):
+                hasher.update(chunk)
+        
+        return hasher.hexdigest()
+    
+    def _verify_gpg_signature(self, package_path):
+        """Verify GPG signature of package"""
+        package_type = self.get_package_type(package_path)
+        
+        try:
+            if package_type == '.deb':
+                # For .deb packages, check if there's a .asc or .sig file
+                sig_path = package_path + '.asc'
+                if not os.path.exists(sig_path):
+                    sig_path = package_path + '.sig'
+                
+                if not os.path.exists(sig_path):
+                    return False, "No signature file found (.asc or .sig required)"
+                
+                # Verify using gpg
+                result = subprocess.run(
+                    ['gpg', '--verify', sig_path, package_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                
+                if result.returncode == 0:
+                    return True, "Signature valid"
+                else:
+                    return False, result.stderr
+                    
+            elif package_type == '.rpm':
+                # For RPM packages, use rpm --checksig
+                result = subprocess.run(
+                    ['rpm', '--checksig', package_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                
+                if result.returncode == 0 and 'OK' in result.stdout:
+                    return True, "Signature valid"
+                else:
+                    return False, result.stdout + result.stderr
+            
+            else:
+                return False, "Unsupported package type for signature verification"
+                
+        except FileNotFoundError:
+            return False, "GPG or RPM tools not installed"
+        except subprocess.TimeoutExpired:
+            return False, "Signature verification timed out"
+        except Exception as e:
+            return False, f"Signature verification error: {str(e)}"
+    
+    def _check_package_integrity(self, package_path):
+        """Check if package file is valid and not corrupted"""
+        package_type = self.get_package_type(package_path)
+        
+        try:
+            if package_type == '.deb':
+                # Try to read package metadata
+                result = subprocess.run(
+                    ['dpkg-deb', '--info', package_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if result.returncode == 0:
+                    return True, "Package structure valid"
+                else:
+                    return False, "Package appears to be corrupted or invalid"
+                    
+            elif package_type == '.rpm':
+                # Try to query package
+                result = subprocess.run(
+                    ['rpm', '-qp', package_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if result.returncode == 0:
+                    return True, "Package structure valid"
+                else:
+                    return False, "Package appears to be corrupted or invalid"
+            
+            return True, "Basic checks passed"
+            
+        except FileNotFoundError:
+            # If tools aren't available, skip this check
+            return True, "Integrity check skipped (tools not available)"
+        except subprocess.TimeoutExpired:
+            return False, "Integrity check timed out"
+        except Exception as e:
+            return False, f"Integrity check error: {str(e)}"
+    
+    def get_package_checksum(self, package_path, checksum_type='sha256'):
+        """
+        Calculate and return package checksum
+        Useful for users who want to verify against a known checksum
+        """
+        try:
+            checksum = self._calculate_checksum(package_path, checksum_type)
+            file_size = self._get_file_size(package_path)
+            
+            return {
+                'success': True,
+                'checksum': checksum,
+                'type': checksum_type.upper(),
+                'file_size': file_size,
+                'file_name': os.path.basename(package_path)
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
     def install_package(self, package_path):
         """Install the package using appropriate package manager"""
         package_type = self.get_package_type(package_path)

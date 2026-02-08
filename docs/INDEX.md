@@ -59,8 +59,6 @@ Welcome to the Linux Package Installer documentation directory!
 ```
 docs/
 ├── README.md                    # This file
-├── CHANGELOG.md                 # Version history
-├── CONTRIBUTING.md              # Contribution guidelines
 ├── ENHANCEMENT_SUMMARY.md       # Complete feature summary
 ├── KEYBOARD_SHORTCUTS.md        # Quick shortcut reference
 └── UI_UX_ENHANCEMENTS.md        # Comprehensive UI/UX guide
