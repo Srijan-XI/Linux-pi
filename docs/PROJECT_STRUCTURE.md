@@ -13,8 +13,7 @@ Linux-pi/
 │   ├── main.py                     # Main application (enhanced version)
 │   ├── package_handler.py          # Package installation logic
 │   ├── logger.py                   # Installation history logger
-│   ├── main_old.py                 # Backup of original main.py
-│   └── main_enhanced.py            # Copy of enhanced version
+│   └── main_old.py                 # Backup of original version (pre-enhancements)
 │
 ├── ⚙️ Configuration & Setup
 │   ├── install.sh                  # Installation script (bash)
@@ -89,14 +88,10 @@ Linux-pi/
 - **Size**: ~4KB
 
 #### 🐍 main_old.py
-- **Purpose**: Backup of original version
-- **Use**: Reference and rollback option
+- **Purpose**: Backup of original version (before enhancements)
+- **Use**: Reference and rollback option if needed
+- **Note**: Pre-enhancement version with basic features
 - **Size**: ~29KB
-
-#### 🐍 main_enhanced.py
-- **Purpose**: Copy of enhanced version
-- **Use**: Development reference
-- **Size**: ~36KB
 
 ### Configuration & Setup
 
@@ -188,11 +183,15 @@ The application creates the following directory at runtime:
 
 ## File Count Summary
 
-- **Python files**: 5 (3 active, 2 backup/reference)
+- **Python files**: 4 (3 active + 1 backup)
+  - `main.py` - Active enhanced version
+  - `package_handler.py` - Package logic
+  - `logger.py` - History tracking
+  - `main_old.py` - Original backup
 - **Configuration files**: 3
-- **Documentation files**: 6 (in docs/) + 1 (README.md)
+- **Documentation files**: 7 (in docs/) + 1 (README.md in root)
 - **Total files**: 15
-- **Directories**: 1 (docs/)
+- **Directories**: 2 (.git/ and docs/)
 
 ## File Organization Benefits
 
