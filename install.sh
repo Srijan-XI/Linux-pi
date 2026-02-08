@@ -114,14 +114,58 @@ mkdir -p "$BIN_DIR"
 
 LAUNCHER="$BIN_DIR/linux-package-installer"
 
-cat > "$LAUNCHER" << EOF
+echo ""
+echo "Creating launcher script..."
+
+cat > "$LAUNCHER" << 'EOF'
 #!/bin/bash
+# Linux Package Installer Launcher Script
+# This script ensures proper execution from any directory
+
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Detect the installation directory
+if [ -f "$HOME/.linux-package-installer/install_path.txt" ]; then
+    INSTALL_DIR=$(cat "$HOME/.linux-package-installer/install_path.txt")
+else
+    echo "Error: Installation path not found."
+    echo "Please reinstall the application using install.sh"
+    exit 1
+fi
+
+# Check if installation directory exists
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo "Error: Installation directory not found: $INSTALL_DIR"
+    echo "Please reinstall the application."
+    exit 1
+fi
+
+# Set virtual environment path
+VENV_DIR="$INSTALL_DIR/venv"
+
+# Check if virtual environment exists
+if [ ! -f "$VENV_DIR/bin/python" ]; then
+    echo "Error: Virtual environment not found at: $VENV_DIR"
+    echo "Please reinstall the application using install.sh"
+    exit 1
+fi
+
+# Run the application
 cd "$INSTALL_DIR"
-"$VENV_DIR/bin/python" main.py "\$@"
+exec "$VENV_DIR/bin/python" "$INSTALL_DIR/main.py" "$@"
 EOF
+
+# Replace placeholder with actual installation directory
+sed -i "s|INSTALL_DIR=.*|INSTALL_DIR=\"$INSTALL_DIR\"|" "$LAUNCHER" 2>/dev/null || \
+    perl -i -pe "s|INSTALL_DIR=.*|INSTALL_DIR=\"$INSTALL_DIR\"|" "$LAUNCHER"
 
 chmod +x "$LAUNCHER"
 echo "✓ Created launcher script at: $LAUNCHER"
+
+# Save installation path for launcher script
+mkdir -p "$HOME/.linux-package-installer"
+echo "$INSTALL_DIR" > "$HOME/.linux-package-installer/install_path.txt"
 
 # Check if .local/bin is in PATH
 if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then

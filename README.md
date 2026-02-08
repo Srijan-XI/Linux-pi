@@ -8,15 +8,17 @@ A user-friendly GUI application to help new Linux users install `.deb` and `.rpm
 
 ## Features
 
+### Core Features
+
 ✨ **Simple and Intuitive Interface** - Easy-to-use GUI designed for beginners
 
 📦 **Multi-Format Support** - Works with both `.deb` and `.rpm` packages
 
-📊 **Progress Tracking** - Real-time progress bar and status updates
+📊 **Detailed Progress Tracking** - 7-step installation process with real-time updates
 
 🔍 **Package Information** - View detailed package metadata before installation
 
-📝 **Installation History** - Keep track of all installed packages
+📝 **Installation History** - Keep track of all installed packages with success/failure indicators
 
 ❌ **Error Handling** - Clear error messages and troubleshooting guidance
 
@@ -25,6 +27,22 @@ A user-friendly GUI application to help new Linux users install `.deb` and `.rpm
 🌐 **Offline Support** - Works completely offline once installed
 
 📋 **Installation Logs** - Detailed logs for troubleshooting
+
+### Enhanced UI/UX Features
+
+⌨️ **Keyboard Shortcuts** - Full keyboard support (Ctrl+O, Ctrl+I, F5, Ctrl+Q)
+
+🔔 **System Tray Integration** - Minimize to tray with installation notifications
+
+💡 **Comprehensive Tooltips** - Helpful guidance on every element
+
+🎨 **Light & Dark Themes** - Switch between themes with persistent settings
+
+📍 **Visual Progress Steps** - See exactly what's happening during installation
+
+✅ **Success/Failure Icons** - Quick visual identification in history
+
+🎯 **Professional Design** - Modern, polished interface with emoji indicators
 
 ## Screenshots
 
@@ -120,39 +138,182 @@ chmod +x main.py
 
 ### Running the Application
 
+After installation, you can launch the application in several ways:
+
+#### Method 1: From Application Menu (Recommended for Beginners)
+
+1. Open your application menu/launcher
+2. Search for "Linux Package Installer"
+3. Click on the icon to launch
+
+#### Method 2: From Terminal (Quick Launch)
+
+If you used the automated installer and `~/.local/bin` is in your PATH:
+
 ```bash
+linux-package-installer
+```
+
+#### Method 3: From Terminal (Direct Python)
+
+Navigate to the project directory and run:
+
+```bash
+# If you used the automated installer
+cd ~/path/to/Linux-pi
+venv/bin/python main.py
+```
+
+Or if you installed manually with a virtual environment:
+
+```bash
+cd ~/path/to/Linux-pi
+source venv/bin/activate
 python main.py
 ```
 
-Or if you made it executable:
+#### Method 4: Direct Execution
+
+If you made main.py executable:
 
 ```bash
+cd ~/path/to/Linux-pi
 ./main.py
 ```
 
-### Installing a Package
+### Adding ~/.local/bin to PATH
 
-1. **Launch the application**
-2. **Click "Browse..."** to select your `.deb` or `.rpm` package file
-3. **Review the package information** displayed in the info panel
-4. **Click "Install Package"** to start the installation
-5. **Enter your password** when prompted (required for administrative privileges)
-6. **Wait for installation** to complete - progress will be shown in real-time
-7. **Check the installation log** for detailed output
+If the launcher command doesn't work, add `~/.local/bin` to your PATH:
+
+**For Bash (Most Linux distributions):**
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**For Zsh (Kali Linux, modern Ubuntu, macOS):**
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**For Fish:**
+```bash
+fish_add_path ~/.local/bin
+```
+
+After this, you can run `linux-package-installer` from anywhere!
+
+### Installing a Package (Step-by-Step Tutorial)
+
+#### First-Time Installation:
+
+1. **Launch the application** using any of the methods above
+2. **Click the "Browse..." button** on the Install Package tab
+3. **Navigate to your downloaded package file** (usually in ~/Downloads)
+4. **Select the `.deb` or `.rpm` file** you want to install
+5. **Review the package information** - The app will display:
+   - Package name
+   - Version
+   - Architecture (32-bit/64-bit)
+   - Maintainer
+   - Description
+6. **Click "Install Package"** button (green button)
+7. **Enter your password** when prompted - This is required for system changes
+8. **Wait for installation** - Watch the progress bar and status messages
+9. **Check the result** - A popup will confirm success or show any errors
+10. **View the log** - The Installation Log panel shows detailed output
+
+#### Quick Installation (After First Time):
+
+1. Launch app → Browse → Select package → Install → Enter password → Done!
 
 ### Viewing Installation History
 
-1. Navigate to the **"Installation History"** tab
-2. View all previous installation attempts
-3. Use the **"Refresh"** button to update the list
-4. Use **"Clear History"** to remove all entries (logs will be deleted)
+Track all your package installations:
 
-### Settings
+1. **Click on the "Installation History" tab** (second tab)
+2. **View the list** of all packages you've installed
+   - ✓ Green checkmark = Successful installation
+   - ✗ Red X = Failed installation
+   - Each entry shows: Package name and installation date/time
+3. **Refresh the list** - Click "Refresh" if you just installed something
+4. **Clear history** - Click "Clear History" to remove all entries (permanent!)
 
-Access the **"Settings"** tab to:
-- View detected package manager
-- Check application version
-- Read about the application
+### Customizing Settings
+
+Access the **"Settings"** tab (third tab) to customize your experience:
+
+#### Theme Selection
+
+- **Light Theme** (Default) - Clean, bright interface ideal for daytime use
+- **Dark Theme** - Easy on the eyes for night-time use or low-light environments
+
+To change theme:
+1. Go to Settings tab
+2. Under "Appearance", select your preferred theme from dropdown
+3. Theme applies instantly and is saved automatically
+
+#### System Information
+
+View detected system configuration:
+- **Package Manager** - Shows which package manager is detected (apt, dnf, yum, zypper)
+- **Application Version** - Current version of the installer
+- **About** - Author and license information
+
+### Common Workflows
+
+#### Workflow 1: Installing Multiple Packages
+
+```
+1. Install first package (Browse → Install → Wait)
+2. Click "Clear" button to reset
+3. Install next package (Browse → Install → Wait)
+4. Repeat as needed
+5. Check Installation History to verify all installations
+```
+
+#### Workflow 2: Checking Before Installing
+
+```
+1. Browse to select package
+2. Review package information carefully
+3. Check if it's the correct version and architecture
+4. If correct → Install
+5. If wrong → Click "Clear" and select different package
+```
+
+#### Workflow 3: Troubleshooting Failed Installation
+
+```
+1. If installation fails, check the Installation Log
+2. Read the error message carefully
+3. Common issues:
+   - Missing dependencies → Try installing dependencies first
+   - Wrong architecture → Download correct version (32-bit vs 64-bit)
+   - Permission denied → Make sure you entered password correctly
+4. Check Installation History to see what went wrong
+5. Try installing again or check package source
+```
+
+### Keyboard Shortcuts
+
+- **Tab** - Navigate between UI elements
+- **Enter** - Click focused button
+- **Ctrl+Tab** - Switch between tabs
+- **Alt+F4** - Close application
+
+### Tips for New Linux Users
+
+1. **Always download packages from official sources** - This ensures security
+2. **Check package compatibility** - Make sure it matches your distribution:
+   - `.deb` files → Debian, Ubuntu, Linux Mint, Kali
+   - `.rpm` files → Fedora, RHEL, CentOS, openSUSE
+3. **Review package info before installing** - Verify it's what you expect
+4. **Keep track of installations** - Use the history feature
+5. **Read error messages** - They often tell you exactly what's wrong
+6. **Make sure you have enough disk space** - Some packages are large
+7. **Use dark mode at night** - It's easier on your eyes!
 
 ## System Integration
 
@@ -270,6 +431,18 @@ Planned features for future releases:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) folder:
+
+- **[Keyboard Shortcuts](docs/KEYBOARD_SHORTCUTS.md)** - Quick reference for all shortcuts
+- **[UI/UX Enhancements](docs/UI_UX_ENHANCEMENTS.md)** - Complete feature guide
+- **[Enhancement Summary](docs/ENHANCEMENT_SUMMARY.md)** - Overview of all improvements
+- **[Changelog](docs/CHANGELOG.md)** - Version history and release notes
+- **[Contributing](docs/CONTRIBUTING.md)** - Guidelines for contributors
+
+Visit the [docs folder](docs/) for detailed documentation on all features and functionality.
+
 ## Acknowledgments
 
 - Built with [PyQt5](https://www.riverbankcomputing.com/software/pyqt/)
@@ -281,16 +454,18 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 If you encounter any issues or have questions:
 
 1. Check the [Troubleshooting](#troubleshooting) section
-2. Search existing [Issues](https://github.com/yourusername/linux-package-installer/issues)
-3. Open a new issue with detailed information about your problem
+2. Review the [documentation](docs/) folder
+3. Search existing [Issues](https://github.com/Srijan-XI/Linux-pi/issues)
+4. Open a new issue with detailed information about your problem
 
 ## Author
 
-**Your Development Team**
+**Srijan-XI**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [@Srijan-XI](https://github.com/Srijan-XI)
+- Repository: [Linux-pi](https://github.com/Srijan-XI/Linux-pi)
 
 ---
 
 **Note**: This application requires administrative privileges to install packages. Always verify package sources before installation to ensure system security.
+

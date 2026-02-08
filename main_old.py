@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Linux Package Installer - Main Application (Enhanced Version)
+Linux Package Installer - Main Application
 A simple GUI tool to help new Linux users install .deb and .rpm packages
-with enhanced UI/UX features
 """
 
 import sys
@@ -11,7 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QFileDialog, 
                              QProgressBar, QTextEdit, QTabWidget, QListWidget,
                              QMessageBox, QGroupBox, QComboBox, QSystemTrayIcon,
-                             QMenu, QAction, QShortcut, QListWidgetItem)
+                             QMenu, QAction, QShortcut)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt5.QtGui import QIcon, QFont, QPalette, QColor, QKeySequence, QPixmap
 from package_handler import PackageHandler
@@ -95,7 +94,7 @@ class InstallerThread(QThread):
 
 
 class MainWindow(QMainWindow):
-    """Main application window with enhanced UI/UX"""
+    """Main application window"""
     
     def __init__(self):
         super().__init__()
@@ -105,14 +104,12 @@ class MainWindow(QMainWindow):
         self.current_theme = "Light"  # Default theme
         self.load_settings()
         self.init_ui()
-        self.setup_shortcuts()
-        self.setup_system_tray()
         self.apply_theme(self.current_theme)
         
     def init_ui(self):
         """Initialize the user interface"""
         self.setWindowTitle("Linux Package Installer")
-        self.setGeometry(100, 100, 950, 700)
+        self.setGeometry(100, 100, 900, 650)
         
         # Create central widget and main layout
         central_widget = QWidget()
@@ -122,11 +119,10 @@ class MainWindow(QMainWindow):
         main_layout.setContentsMargins(20, 20, 20, 20)
         
         # Header
-        header = QLabel("📦 Linux Package Installer")
+        header = QLabel("Linux Package Installer")
         header.setAlignment(Qt.AlignCenter)
         header_font = QFont("Arial", 24, QFont.Bold)
         header.setFont(header_font)
-        header.setToolTip("A simple tool to install .deb and .rpm packages")
         main_layout.addWidget(header)
         
         subtitle = QLabel("Simple installation for .deb and .rpm packages")
@@ -138,81 +134,10 @@ class MainWindow(QMainWindow):
         
         # Create tab widget
         self.tabs = QTabWidget()
-        self.tabs.addTab(self.create_install_tab(), "📥 Install Package")
-        self.tabs.addTab(self.create_history_tab(), "📋 Installation History")
-        self.tabs.addTab(self.create_settings_tab(), "⚙️ Settings")
+        self.tabs.addTab(self.create_install_tab(), "Install Package")
+        self.tabs.addTab(self.create_history_tab(), "Installation History")
+        self.tabs.addTab(self.create_settings_tab(), "Settings")
         main_layout.addWidget(self.tabs)
-        
-        # Status bar for shortcuts
-        self.statusBar().showMessage(
-            "💡 Shortcuts: Ctrl+O (Open) | Ctrl+I (Install) | F5 (Refresh) | Ctrl+Q (Quit)"
-        )
-        
-    def setup_shortcuts(self):
-        """Setup keyboard shortcuts"""
-        # Ctrl+O - Open file
-        self.open_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
-        self.open_shortcut.activated.connect(self.browse_package)
-        
-        # Ctrl+I - Install
-        self.install_shortcut = QShortcut(QKeySequence("Ctrl+I"), self)
-        self.install_shortcut.activated.connect(self.install_package)
-        
-        # Ctrl+Q - Quit
-        self.quit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
-        self.quit_shortcut.activated.connect(self.close)
-        
-        # F5 - Refresh history
-        self.refresh_shortcut = QShortcut(QKeySequence("F5"), self)
-        self.refresh_shortcut.activated.connect(self.load_history)
-        
-    def setup_system_tray(self):
-        """Setup system tray icon and menu"""
-        self.tray_icon = QSystemTrayIcon(self)
-        
-        # Create icon (using default for now)
-        icon = self.style().standardIcon(self.style().SP_ComputerIcon)
-        self.tray_icon.setIcon(icon)
-        
-        # Create tray menu
-        tray_menu = QMenu()
-        
-        show_action = QAction("Show Window", self)
-        show_action.triggered.connect(self.show)
-        
-        quit_action = QAction("Quit", self)
-        quit_action.triggered.connect(self.quit_application)
-        
-        tray_menu.addAction(show_action)
-        tray_menu.addSeparator()
-        tray_menu.addAction(quit_action)
-        
-        self.tray_icon.setContextMenu(tray_menu)
-        self.tray_icon.activated.connect(self.tray_icon_clicked)
-        self.tray_icon.setToolTip("Linux Package Installer")
-        self.tray_icon.show()
-    
-    def tray_icon_clicked(self, reason):
-        """Handle tray icon clicks"""
-        if reason == QSystemTrayIcon.DoubleClick:
-            self.show()
-            self.activateWindow()
-    
-    def closeEvent(self, event):
-        """Handle window close event"""
-        event.ignore()
-        self.hide()
-        self.tray_icon.showMessage(
-            "Linux Package Installer",
-            "Application minimized to tray. Double-click to restore.",
-            QSystemTrayIcon.Information,
-            2000
-        )
-    
-    def quit_application(self):
-        """Completely quit the application"""
-        self.tray_icon.hide()
-        QApplication.quit()
         
     def create_install_tab(self):
         """Create the installation tab"""
@@ -221,15 +146,12 @@ class MainWindow(QMainWindow):
         layout.setSpacing(15)
         
         # Package selection group
-        select_group = QGroupBox("📁 Select Package")
-        select_group.setToolTip("Choose a .deb or .rpm package file to install")
+        select_group = QGroupBox("Select Package")
         select_layout = QVBoxLayout()
         
         # File path display
         path_layout = QHBoxLayout()
         self.path_label = QLabel("No package selected")
-        self.path_label.setWordWrap(True)
-        self.path_label.setToolTip("Path to the selected package file")
         self.path_label.setStyleSheet("""
             QLabel {
                 padding: 10px;
@@ -242,9 +164,8 @@ class MainWindow(QMainWindow):
         path_layout.addWidget(self.path_label)
         
         # Browse button
-        self.browse_btn = QPushButton("📂 Browse...")
-        self.browse_btn.setFixedWidth(140)
-        self.browse_btn.setToolTip("Browse for package file (Ctrl+O)")
+        self.browse_btn = QPushButton("Browse...")
+        self.browse_btn.setFixedWidth(120)
         self.browse_btn.clicked.connect(self.browse_package)
         self.browse_btn.setStyleSheet("""
             QPushButton {
@@ -268,36 +189,21 @@ class MainWindow(QMainWindow):
         layout.addWidget(select_group)
         
         # Package info group
-        info_group = QGroupBox("ℹ️ Package Information")
-        info_group.setToolTip("Detailed information about the selected package")
+        info_group = QGroupBox("Package Information")
         info_layout = QVBoxLayout()
         self.info_text = QTextEdit()
         self.info_text.setReadOnly(True)
         self.info_text.setMaximumHeight(100)
         self.info_text.setText("Select a package to see details...")
-        self.info_text.setToolTip("Package metadata and description")
         info_layout.addWidget(self.info_text)
         info_group.setLayout(info_layout)
         layout.addWidget(info_group)
         
-        # Installation steps display
-        steps_group = QGroupBox("🔄 Installation Steps")
-        steps_group.setToolTip("Current installation step and progress")
-        steps_layout = QVBoxLayout()
-        self.steps_label = QLabel("Ready to install")
-        self.steps_label.setAlignment(Qt.AlignCenter)
-        self.steps_label.setStyleSheet("font-size: 13px; font-weight: bold; padding: 8px;")
-        steps_layout.addWidget(self.steps_label)
-        steps_group.setLayout(steps_layout)
-        layout.addWidget(steps_group)
-        
         # Progress group
-        progress_group = QGroupBox("📊 Installation Progress")
-        progress_group.setToolTip("Real-time progress of the installation")
+        progress_group = QGroupBox("Installation Progress")
         progress_layout = QVBoxLayout()
         
         self.progress_bar = QProgressBar()
-        self.progress_bar.setToolTip("Installation progress percentage")
         self.progress_bar.setStyleSheet("""
             QProgressBar {
                 border: 2px solid #bdc3c7;
@@ -321,13 +227,11 @@ class MainWindow(QMainWindow):
         layout.addWidget(progress_group)
         
         # Log output
-        log_group = QGroupBox("📝 Installation Log")
-        log_group.setToolTip("Detailed output from the installation process")
+        log_group = QGroupBox("Installation Log")
         log_layout = QVBoxLayout()
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
-        self.log_output.setMaximumHeight(120)
-        self.log_output.setToolTip("Installation commands and output")
+        self.log_output.setMaximumHeight(150)
         log_layout.addWidget(self.log_output)
         log_group.setLayout(log_layout)
         layout.addWidget(log_group)
@@ -336,11 +240,10 @@ class MainWindow(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.addStretch()
         
-        self.install_btn = QPushButton("✅ Install Package")
+        self.install_btn = QPushButton("Install Package")
         self.install_btn.setFixedHeight(45)
-        self.install_btn.setFixedWidth(220)
+        self.install_btn.setFixedWidth(200)
         self.install_btn.setEnabled(False)
-        self.install_btn.setToolTip("Install the selected package (Ctrl+I)")
         self.install_btn.clicked.connect(self.install_package)
         self.install_btn.setStyleSheet("""
             QPushButton {
@@ -363,10 +266,9 @@ class MainWindow(QMainWindow):
         """)
         button_layout.addWidget(self.install_btn)
         
-        self.clear_btn = QPushButton("🗑️ Clear")
+        self.clear_btn = QPushButton("Clear")
         self.clear_btn.setFixedHeight(45)
-        self.clear_btn.setFixedWidth(130)
-        self.clear_btn.setToolTip("Clear the current selection")
+        self.clear_btn.setFixedWidth(120)
         self.clear_btn.clicked.connect(self.clear_selection)
         self.clear_btn.setStyleSheet("""
             QPushButton {
@@ -398,14 +300,12 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(tab)
         
         # Info label
-        info = QLabel("📋 Installation History - All installed packages")
+        info = QLabel("Installation History - All installed packages")
         info.setFont(QFont("Arial", 10))
-        info.setToolTip("Complete history of all package installations")
         layout.addWidget(info)
         
-        # History list with custom items
+        # History list
         self.history_list = QListWidget()
-        self.history_list.setToolTip("Double-click an item for details (F5 to refresh)")
         self.history_list.setStyleSheet("""
             QListWidget {
                 border: 2px solid #bdc3c7;
@@ -427,8 +327,7 @@ class MainWindow(QMainWindow):
         # Buttons
         button_layout = QHBoxLayout()
         
-        refresh_btn = QPushButton("🔄 Refresh")
-        refresh_btn.setToolTip("Refresh the installation history (F5)")
+        refresh_btn = QPushButton("Refresh")
         refresh_btn.clicked.connect(self.load_history)
         refresh_btn.setStyleSheet("""
             QPushButton {
@@ -444,8 +343,7 @@ class MainWindow(QMainWindow):
         """)
         button_layout.addWidget(refresh_btn)
         
-        clear_history_btn = QPushButton("🗑️ Clear History")
-        clear_history_btn.setToolTip("Permanently delete all history entries")
+        clear_history_btn = QPushButton("Clear History")
         clear_history_btn.clicked.connect(self.clear_history)
         clear_history_btn.setStyleSheet("""
             QPushButton {
@@ -472,8 +370,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(tab)
         
         # Theme settings
-        theme_group = QGroupBox("🎨 Appearance")
-        theme_group.setToolTip("Customize the application appearance")
+        theme_group = QGroupBox("Appearance")
         theme_layout = QVBoxLayout()
         
         theme_label = QLabel("Theme:")
@@ -482,7 +379,6 @@ class MainWindow(QMainWindow):
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Light", "Dark"])
         self.theme_combo.setCurrentText(self.current_theme)
-        self.theme_combo.setToolTip("Choose between light and dark theme")
         self.theme_combo.currentTextChanged.connect(self.change_theme)
         theme_layout.addWidget(self.theme_combo)
         
@@ -490,8 +386,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(theme_group)
         
         # Package manager settings
-        pm_group = QGroupBox("📦 Package Manager")
-        pm_group.setToolTip("Information about your system's package manager")
+        pm_group = QGroupBox("Package Manager")
         pm_layout = QVBoxLayout()
         
         pm_info = QLabel("Detected Package Manager:")
@@ -499,15 +394,13 @@ class MainWindow(QMainWindow):
         
         detected_pm = self.package_handler.detect_package_manager()
         pm_label = QLabel(f"<b>{detected_pm.upper()}</b>")
-        pm_label.setToolTip(f"Your system uses {detected_pm} for package management")
         pm_layout.addWidget(pm_label)
         
         pm_group.setLayout(pm_layout)
         layout.addWidget(pm_group)
         
         # About section
-        about_group = QGroupBox("ℹ️ About")
-        about_group.setToolTip("Information about this application")
+        about_group = QGroupBox("About")
         about_layout = QVBoxLayout()
         
         about_text = QLabel(
@@ -516,13 +409,6 @@ class MainWindow(QMainWindow):
             "<p>Supports .deb and .rpm package formats.</p>"
             "<p><b>Author:</b> Srijan-XI</p>"
             "<p><b>License:</b> MIT License</p>"
-            "<p><b>Keyboard Shortcuts:</b></p>"
-            "<ul>"
-            "<li>Ctrl+O - Open file</li>"
-            "<li>Ctrl+I - Install package</li>"
-            "<li>F5 - Refresh history</li>"
-            "<li>Ctrl+Q - Quit application</li>"
-            "</ul>"
         )
         about_text.setWordWrap(True)
         about_layout.addWidget(about_text)
@@ -551,7 +437,7 @@ class MainWindow(QMainWindow):
             info = self.package_handler.get_package_info(file_path)
             self.info_text.setText(info)
             
-            self.log_output.append(f"📦 Selected package: {os.path.basename(file_path)}")
+            self.log_output.append(f"Selected package: {os.path.basename(file_path)}")
     
     def install_package(self):
         """Start package installation"""
@@ -574,13 +460,11 @@ class MainWindow(QMainWindow):
         self.install_btn.setEnabled(False)
         self.browse_btn.setEnabled(False)
         self.progress_bar.setValue(0)
-        self.steps_label.setText("Starting installation...")
         
         # Start installation thread
         self.installer_thread = InstallerThread(self.current_package, self.package_handler)
         self.installer_thread.progress.connect(self.update_progress)
         self.installer_thread.status.connect(self.update_status)
-        self.installer_thread.step.connect(self.update_step)
         self.installer_thread.finished.connect(self.installation_finished)
         self.installer_thread.start()
     
@@ -591,37 +475,18 @@ class MainWindow(QMainWindow):
     def update_status(self, message):
         """Update status label and log"""
         self.status_label.setText(message)
-        self.log_output.append(f"💬 {message}")
-    
-    def update_step(self, step_message):
-        """Update installation step display"""
-        self.steps_label.setText(step_message)
-        self.log_output.append(step_message)
+        self.log_output.append(message)
     
     def installation_finished(self, success, message):
         """Handle installation completion"""
         self.browse_btn.setEnabled(True)
         
         if success:
-            # Show success notification
-            self.tray_icon.showMessage(
-                "Installation Successful",
-                f"Package installed successfully!",
-                QSystemTrayIcon.Information,
-                3000
-            )
             QMessageBox.information(self, "Success", message)
             self.logger.log_installation(self.current_package, True, message)
             self.load_history()
             self.clear_selection()
         else:
-            # Show failure notification
-            self.tray_icon.showMessage(
-                "Installation Failed",
-                f"Installation failed. Check the log for details.",
-                QSystemTrayIcon.Critical,
-                3000
-            )
             QMessageBox.critical(self, "Installation Failed", message)
             self.logger.log_installation(self.current_package, False, message)
             self.install_btn.setEnabled(True)
@@ -636,11 +501,10 @@ class MainWindow(QMainWindow):
         self.install_btn.setEnabled(False)
         self.progress_bar.setValue(0)
         self.status_label.setText("Ready to install")
-        self.steps_label.setText("Ready to install")
         self.log_output.clear()
     
     def load_history(self):
-        """Load installation history with icons"""
+        """Load installation history"""
         self.history_list.clear()
         history = self.logger.get_history()
         
@@ -649,23 +513,12 @@ class MainWindow(QMainWindow):
             return
         
         for entry in reversed(history[-50:]):  # Show last 50 entries
-            success = entry.get('success', False)
+            status = "✓" if entry.get('success') else "✗"
             package_name = os.path.basename(entry.get('package', 'Unknown'))
             timestamp = entry.get('timestamp', '')
             
-            # Create item with icon
-            if success:
-                item_text = f"✅ {package_name} - {timestamp}"
-            else:
-                item_text = f"❌ {package_name} - {timestamp}"
-            
-            item = QListWidgetItem(item_text)
-            if success:
-                item.setToolTip(f"Successfully installed: {package_name}")
-            else:
-                item.setToolTip(f"Failed to install: {package_name}")
-            
-            self.history_list.addItem(item)
+            item_text = f"{status} {package_name} - {timestamp}"
+            self.history_list.addItem(item_text)
     
     def clear_history(self):
         """Clear installation history"""
@@ -786,10 +639,6 @@ class MainWindow(QMainWindow):
                     background-color: #27ae60;
                     border-radius: 3px;
                 }
-                QStatusBar {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                }
             """)
             
             # Update dynamic elements for dark theme
@@ -899,10 +748,6 @@ class MainWindow(QMainWindow):
                     background-color: #27ae60;
                     border-radius: 3px;
                 }
-                QStatusBar {
-                    background-color: white;
-                    color: #2c3e50;
-                }
             """)
             
             # Update dynamic elements for light theme
@@ -955,9 +800,6 @@ def main():
     # Set application info
     app.setApplicationName("Linux Package Installer")
     app.setOrganizationName("LinuxTools")
-    
-    # Prevent app from quitting when window closes (for system tray)
-    app.setQuitOnLastWindowClosed(False)
     
     window = MainWindow()
     window.show()
