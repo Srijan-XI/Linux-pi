@@ -393,15 +393,85 @@ class MainWindow(QMainWindow):
         return tab
     
     def create_history_tab(self):
-        """Create the installation history tab"""
+        """Create the installation history tab with search and filter"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         
         # Info label
-        info = QLabel("📋 Installation History - All installed packages")
+        info = QLabel("📋 Installation History - Search and filter your installations")
         info.setFont(QFont("Arial", 10))
-        info.setToolTip("Complete history of all package installations")
+        info.setToolTip("Complete history of all package installations with search and filter")
         layout.addWidget(info)
+        
+        # Search and Filter Section
+        search_filter_group = QGroupBox("🔍 Search & Filter")
+        search_filter_layout = QVBoxLayout()
+        
+        # Search bar
+        search_layout = QHBoxLayout()
+        search_label = QLabel("Search:")
+        search_label.setToolTip("Search by package name")
+        search_layout.addWidget(search_label)
+        
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Type to search packages...")
+        self.search_input.textChanged.connect(self.apply_filters)
+        self.search_input.setToolTip("Search by package name (real-time)")
+        search_layout.addWidget(self.search_input)
+        
+        search_filter_layout.addLayout(search_layout)
+        
+        # Filter controls
+        filter_layout = QHBoxLayout()
+        
+        # Status filter
+        status_label = QLabel("Status:")
+        filter_layout.addWidget(status_label)
+        
+        self.status_filter = QComboBox()
+        self.status_filter.addItems(["All", "✅ Success", "❌ Failed"])
+        self.status_filter.currentIndexChanged.connect(self.apply_filters)
+        self.status_filter.setToolTip("Filter by installation status")
+        filter_layout.addWidget(self.status_filter)
+        
+        # Package type filter
+        type_label = QLabel("Type:")
+        filter_layout.addWidget(type_label)
+        
+        self.type_filter = QComboBox()
+        self.type_filter.addItems(["All", ".deb", ".rpm"])
+        self.type_filter.currentIndexChanged.connect(self.apply_filters)
+        self.type_filter.setToolTip("Filter by package type")
+        filter_layout.addWidget(self.type_filter)
+        
+        # Clear filters button
+        clear_filters_btn = QPushButton("🔄 Clear Filters")
+        clear_filters_btn.clicked.connect(self.clear_filters)
+        clear_filters_btn.setToolTip("Reset all filters and show all history")
+        clear_filters_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #95a5a6;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 3px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #7f8c8d;
+            }
+        """)
+        filter_layout.addWidget(clear_filters_btn)
+        
+        filter_layout.addStretch()
+        search_filter_layout.addLayout(filter_layout)
+        
+        search_filter_group.setLayout(search_filter_layout)
+        layout.addWidget(search_filter_group)
+        
+        # Results count label
+        self.results_label = QLabel("Showing all results")
+        self.results_label.setStyleSheet("color: #7f8c8d; font-style: italic;")
+        layout.addWidget(self.results_label)
         
         # History list with custom items
         self.history_list = QListWidget()
@@ -461,10 +531,68 @@ class MainWindow(QMainWindow):
         """)
         button_layout.addWidget(clear_history_btn)
         
+        # Add separator
+        button_layout.addSpacing(20)
+        
+        # Export CSV button
+        export_csv_btn = QPushButton("📊 Export CSV")
+        export_csv_btn.setToolTip("Export history to CSV file for spreadsheet analysis")
+        export_csv_btn.clicked.connect(self.export_csv)
+        export_csv_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #27ae60;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 5px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #229954;
+            }
+        """)
+        button_layout.addWidget(export_csv_btn)
+        
+        # Export JSON button
+        export_json_btn = QPushButton("📦 Export JSON")
+        export_json_btn.setToolTip("Export history to JSON file with full metadata")
+        export_json_btn.clicked.connect(self.export_json)
+        export_json_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #16a085;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 5px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #138d75;
+            }
+        """)
+        button_layout.addWidget(export_json_btn)
+        
+        # Import button
+        import_btn = QPushButton("📥 Import")
+        import_btn.setToolTip("Import history from JSON backup file")
+        import_btn.clicked.connect(self.import_history)
+        import_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #9b59b6;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 5px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #8e44ad;
+            }
+        """)
+        button_layout.addWidget(import_btn)
+        
         button_layout.addStretch()
         layout.addLayout(button_layout)
         
         return tab
+    
     
     def create_settings_tab(self):
         """Create the settings tab"""
@@ -639,14 +767,28 @@ class MainWindow(QMainWindow):
         self.steps_label.setText("Ready to install")
         self.log_output.clear()
     
-    def load_history(self):
-        """Load installation history with icons"""
+    def load_history(self, filtered_history=None):
+        """Load installation history with icons and filtering support"""
         self.history_list.clear()
-        history = self.logger.get_history()
+        
+        # Use filtered history if provided, otherwise get all history
+        if filtered_history is not None:
+            history = filtered_history
+        else:
+            history = self.logger.get_history()
         
         if not history:
             self.history_list.addItem("No installation history")
+            self.results_label.setText("No results found")
             return
+        
+        # Update results label
+        total = len(self.logger.get_history())
+        showing = len(history)
+        if showing < total:
+            self.results_label.setText(f"Showing {showing} of {total} results")
+        else:
+            self.results_label.setText(f"Showing all {total} results")
         
         for entry in reversed(history[-50:]):  # Show last 50 entries
             success = entry.get('success', False)
@@ -667,6 +809,50 @@ class MainWindow(QMainWindow):
             
             self.history_list.addItem(item)
     
+    def apply_filters(self):
+        """Apply search and filter criteria to history"""
+        # Get search query
+        search_query = self.search_input.text().strip()
+        
+        # Get filter selections
+        status_filter = self.status_filter.currentText()
+        type_filter = self.type_filter.currentText()
+        
+        # Convert filter selections to logger parameters
+        status_param = None
+        if status_filter == "✅ Success":
+            status_param = "success"
+        elif status_filter == "❌ Failed":
+            status_param = "failed"
+        
+        type_param = None
+        if type_filter == ".deb":
+            type_param = "deb"
+        elif type_filter == ".rpm":
+            type_param = "rpm"
+        
+        # Apply filters
+        filtered_history = self.logger.filter_history(
+            status=status_param,
+            package_type=type_param
+        )
+        
+        # Apply search if query exists
+        if search_query:
+            filtered_history = [entry for entry in filtered_history
+                              if search_query.lower() in entry.get('package_name', '').lower() or
+                                 search_query.lower() in entry.get('package', '').lower()]
+        
+        # Reload history with filtered results
+        self.load_history(filtered_history)
+    
+    def clear_filters(self):
+        """Clear all filters and show all history"""
+        self.search_input.clear()
+        self.status_filter.setCurrentIndex(0)  # "All"
+        self.type_filter.setCurrentIndex(0)    # "All"
+        self.load_history()  # Reload all history
+    
     def clear_history(self):
         """Clear installation history"""
         reply = QMessageBox.question(
@@ -680,6 +866,138 @@ class MainWindow(QMainWindow):
             self.logger.clear_history()
             self.load_history()
             QMessageBox.information(self, "Success", "History cleared successfully!")
+    
+    def export_csv(self):
+        """Export history to CSV file"""
+        try:
+            # Get save file path from user
+            from PyQt5.QtWidgets import QFileDialog
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Export History as CSV",
+                "snapwiz_history.csv",
+                "CSV Files (*.csv);;All Files (*)"
+            )
+            
+            if file_path:
+                # Export to CSV
+                success = self.logger.export_history(file_path, format='csv')
+                
+                if success:
+                    QMessageBox.information(
+                        self,
+                        "Export Successful",
+                        f"History exported successfully to:\n{file_path}\n\n"
+                        f"You can now open this file in Excel or any spreadsheet application."
+                    )
+                else:
+                    QMessageBox.critical(
+                        self,
+                        "Export Failed",
+                        "Failed to export history. Please check file permissions."
+                    )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Export Error",
+                f"An error occurred while exporting:\n{str(e)}"
+            )
+    
+    def export_json(self):
+        """Export history to JSON file"""
+        try:
+            # Get save file path from user
+            from PyQt5.QtWidgets import QFileDialog
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Export History as JSON",
+                "snapwiz_history.json",
+                "JSON Files (*.json);;All Files (*)"
+            )
+            
+            if file_path:
+                # Export to JSON
+                success = self.logger.export_history(file_path, format='json')
+                
+                if success:
+                    history_count = len(self.logger.get_history())
+                    QMessageBox.information(
+                        self,
+                        "Export Successful",
+                        f"History exported successfully!\n\n"
+                        f"File: {file_path}\n"
+                        f"Entries: {history_count}\n\n"
+                        f"This file can be imported later to restore your history."
+                    )
+                else:
+                    QMessageBox.critical(
+                        self,
+                        "Export Failed",
+                        "Failed to export history. Please check file permissions."
+                    )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Export Error",
+                f"An error occurred while exporting:\n{str(e)}"
+            )
+    
+    def import_history(self):
+        """Import history from JSON file"""
+        try:
+            # Get file path from user
+            from PyQt5.QtWidgets import QFileDialog
+            file_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Import History from JSON",
+                "",
+                "JSON Files (*.json);;All Files (*)"
+            )
+            
+            if file_path:
+                # Ask user about merge or replace
+                reply = QMessageBox.question(
+                    self,
+                    "Import Mode",
+                    "How would you like to import the history?\n\n"
+                    "• Yes - Merge with existing history (keep current + add imported)\n"
+                    "• No - Replace existing history (delete current, use imported only)",
+                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel
+                )
+                
+                if reply == QMessageBox.Cancel:
+                    return
+                
+                merge = (reply == QMessageBox.Yes)
+                
+                # Import the history
+                success = self.logger.import_history(file_path, merge=merge)
+                
+                if success:
+                    self.load_history()  # Refresh the display
+                    history_count = len(self.logger.get_history())
+                    
+                    mode_text = "merged with" if merge else "replaced"
+                    QMessageBox.information(
+                        self,
+                        "Import Successful",
+                        f"History {mode_text} successfully!\n\n"
+                        f"Total entries now: {history_count}\n\n"
+                        f"Your history has been updated."
+                    )
+                else:
+                    QMessageBox.critical(
+                        self,
+                        "Import Failed",
+                        "Failed to import history. Please check the file format.\n\n"
+                        "Make sure you're importing a valid SnapWiz JSON history file."
+                    )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Import Error",
+                f"An error occurred while importing:\n{str(e)}"
+            )
     
     def change_theme(self, theme):
         """Change application theme"""

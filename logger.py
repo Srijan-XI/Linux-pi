@@ -104,13 +104,120 @@ class InstallLogger:
             'success_rate': (successful / total * 100) if total > 0 else 0
         }
     
-    def export_history(self, export_path):
-        """Export history to a file"""
+    def export_history(self, export_path, format='json'):
+        """Export history to a file in JSON or CSV format"""
         try:
             history = self.get_history()
-            with open(export_path, 'w') as f:
-                json.dump(history, f, indent=2)
+            
+            if format.lower() == 'csv':
+                import csv
+                with open(export_path, 'w', newline='', encoding='utf-8') as f:
+                    if history:
+                        fieldnames = ['timestamp', 'package_name', 'success', 'message']
+                        writer = csv.DictWriter(f, fieldnames=fieldnames)
+                        writer.writeheader()
+                        for entry in history:
+                            writer.writerow({
+                                'timestamp': entry.get('timestamp', ''),
+                                'package_name': entry.get('package_name', ''),
+                                'success': 'Success' if entry.get('success') else 'Failed',
+                                'message': entry.get('message', '')
+                            })
+            else:  # JSON
+                export_data = {
+                    'export_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    'total_entries': len(history),
+                    'entries': history
+                }
+                with open(export_path, 'w', encoding='utf-8') as f:
+                    json.dump(export_data,f, indent=2)
+            
             return True
         except Exception as e:
             print(f"Error exporting history: {e}")
             return False
+    
+    def import_history(self, import_path, merge=True):
+        """Import history from a JSON file"""
+        try:
+            with open(import_path, 'r', encoding='utf-8') as f:
+                imported_data = json.load(f)
+            
+            # Handle both old format (array) and new format (object with metadata)
+            if isinstance(imported_data, list):
+                imported_entries = imported_data
+            elif isinstance(imported_data, dict) and 'entries' in imported_data:
+                imported_entries = imported_data['entries']
+            else:
+                return False
+            
+            if merge:
+                # Merge with existing history
+                current_history = self.get_history()
+                current_history.extend(imported_entries)
+                final_history = current_history
+            else:
+                # Replace existing history
+                final_history = imported_entries
+            
+            # Write to file
+            with open(self.log_file, 'w', encoding='utf-8') as f:
+                json.dump(final_history, f, indent=2)
+            
+            return True
+        except Exception as e:
+            print(f"Error importing history: {e}")
+            return False
+    
+    def search_history(self, query):
+        """Search history by package name"""
+        if not query:
+            return self.get_history()
+        
+        history = self.get_history()
+        query_lower = query.lower()
+        
+        return [entry for entry in history 
+                if query_lower in entry.get('package_name', '').lower() or
+                   query_lower in entry.get('package', '').lower()]
+    
+    def filter_history(self, status=None, package_type=None, date_from=None, date_to=None):
+        """Filter history by various criteria"""
+        history = self.get_history()
+        filtered = history
+        
+        # Filter by status
+        if status == 'success':
+            filtered = [e for e in filtered if e.get('success', False)]
+        elif status == 'failed':
+            filtered = [e for e in filtered if not e.get('success', False)]
+        
+        # Filter by package type
+        if package_type:
+            if package_type == 'deb':
+                filtered = [e for e in filtered if e.get('package_name', '').endswith('.deb')]
+            elif package_type == 'rpm':
+                filtered = [e for e in filtered if e.get('package_name', '').endswith('.rpm')]
+        
+        # Filter by date range
+        if date_from or date_to:
+            def parse_date(date_str):
+                try:
+                    return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+                except:
+                    return None
+            
+            if date_from:
+                from_dt = datetime.strptime(date_from, '%Y-%m-%d')
+                filtered = [e for e in filtered 
+                           if parse_date(e.get('timestamp', '')) and 
+                              parse_date(e.get('timestamp', '')) >= from_dt]
+            
+            if date_to:
+                to_dt = datetime.strptime(date_to, '%Y-%m-%d')
+                filtered = [e for e in filtered 
+                           if parse_date(e.get('timestamp', '')) and 
+                              parse_date(e.get('timestamp', '')) <= to_dt]
+        
+        return filtered
+
