@@ -26,10 +26,14 @@ class InstallerThread(QThread):
     finished = pyqtSignal(bool, str)
     step = pyqtSignal(str)  # New signal for detailed steps
     
-    def __init__(self, package_path, package_handler):
+    def __init__(self, package_path, package_handler, verify_integrity=True, verify_signature=False, checksum=None, checksum_type='sha256'):
         super().__init__()
         self.package_path = package_path
         self.package_handler = package_handler
+        self.verify_integrity = verify_integrity
+        self.verify_signature = verify_signature
+        self.checksum = checksum
+        self.checksum_type = checksum_type
         
     def run(self):
         """Run the installation process with detailed progress"""
@@ -50,34 +54,56 @@ class InstallerThread(QThread):
                 return
             
             time.sleep(0.2)
-            self.progress.emit(25)
+            self.progress.emit(20)
             
-            # Step 3: Reading package information
+            # Step 3: Package Verification (if enabled)
+            if self.verify_integrity or self.checksum or self.verify_signature:
+                self.step.emit("🔐 Verifying package security...")
+                self.status.emit("Checking package integrity and signatures...")
+                self.progress.emit(25)
+                
+                success, message, details = self.package_handler.verify_package(
+                    self.package_path,
+                    checksum=self.checksum,
+                    checksum_type=self.checksum_type,
+                    check_signature=self.verify_signature
+                )
+                
+                if not success:
+                    self.finished.emit(False, f"❌ Verification Failed:\\n{message}")
+                    return
+                
+                self.step.emit("✅ Package verification passed")
+                time.sleep(0.2)
+            
+            self.progress.emit(35)
+            
+            # Step 4: Reading package information
             self.step.emit("📖 Reading package metadata...")
             self.status.emit("Analyzing package contents...")
-            self.progress.emit(35)
+            self.progress.emit(40)
             time.sleep(0.3)
             
-            # Step 4: Checking dependencies
+            # Step 5: Checking dependencies
             self.step.emit("🔗 Checking dependencies...")
             self.status.emit("Verifying system requirements...")
-            self.progress.emit(45)
+            self.progress.emit(50)
             time.sleep(0.3)
             
-            # Step 5: Installing
+            # Step 6: Installing
             self.step.emit("⚙️ Installing package...")
             self.status.emit("Installing package (this may take a while)...")
-            self.progress.emit(55)
+            self.progress.emit(60)
             
             success, message = self.package_handler.install_package(self.package_path)
             
             if success:
-                # Step 6: Configuring
+                # Step 7: Configuring
                 self.step.emit("🔧 Configuring installation...")
                 self.progress.emit(85)
                 time.sleep(0.2)
                 
-                # Step 7: Finalizing
+                # Step 8: Finalizing
                 self.step.emit("✅ Finalizing installation...")
                 self.progress.emit(95)
                 time.sleep(0.2)
@@ -1049,10 +1075,28 @@ class MainWindow(QMainWindow):
             f"Overall: {self.current_installing_index} of {len(self.install_queue)} packages"
         )
         
+        
+        # Get verification settings
+        verify_integrity = self.verify_integrity_checkbox.isChecked()
+        verify_signature = self.verify_signature_checkbox.isChecked()
+        # For batch, we rely on signature and integrity checks. Checksum is manual and hard to do for batch easily without a map, so skipping manual checksum for batch unless implemented differently.
+        # But let's pass the current manual checksum settings anyway. If the user put a checksum it will apply to the first package and fail subsequent ones likely?
+        # Ideally batch mode should maybe disable single-package specific manual checksums or require a manifest.
+        # For now, let's disable manual checksum for batch to avoid false failures on subsequent packages.
+        checksum = None 
+        checksum_type = "sha256"
+
         self.log_output.append(f"\\n📦 [{self.current_installing_index + 1}/{len(self.install_queue)}] Installing: {package_name}")
         
         # Start installation thread
-        self.installer_thread = InstallerThread(current_package, self.package_handler)
+        self.installer_thread = InstallerThread(
+            current_package, 
+            self.package_handler,
+            verify_integrity=verify_integrity,
+            verify_signature=verify_signature,
+            checksum=checksum,
+            checksum_type=checksum_type
+        )
         self.installer_thread.progress.connect(self.update_progress)
         self.installer_thread.status.connect(self.update_status)
         self.installer_thread.step.connect(self.update_step)
@@ -1385,8 +1429,21 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(0)
         self.steps_label.setText("Starting installation...")
         
+        # Get verification settings
+        verify_integrity = self.verify_integrity_checkbox.isChecked()
+        verify_signature = self.verify_signature_checkbox.isChecked()
+        checksum = self.checksum_input.text().strip()
+        checksum_type = self.checksum_type_combo.currentText().lower()
+        
         # Start installation thread
-        self.installer_thread = InstallerThread(self.current_package, self.package_handler)
+        self.installer_thread = InstallerThread(
+            self.current_package, 
+            self.package_handler,
+            verify_integrity=verify_integrity,
+            verify_signature=verify_signature,
+            checksum=checksum,
+            checksum_type=checksum_type
+        )
         self.installer_thread.progress.connect(self.update_progress)
         self.installer_thread.status.connect(self.update_status)
         self.installer_thread.step.connect(self.update_step)
