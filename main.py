@@ -60,8 +60,10 @@ class MainWindow(QMainWindow):
         self.package_handler = PackageHandler()
         self.logger = InstallLogger()
         self.current_package = None
+        self.current_theme = "Light"  # Default theme
+        self.load_settings()
         self.init_ui()
-        self.apply_theme()
+        self.apply_theme(self.current_theme)
         
     def init_ui(self):
         """Initialize the user interface"""
@@ -335,6 +337,7 @@ class MainWindow(QMainWindow):
         
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Light", "Dark"])
+        self.theme_combo.setCurrentText(self.current_theme)
         self.theme_combo.currentTextChanged.connect(self.change_theme)
         theme_layout.addWidget(self.theme_combo)
         
@@ -492,45 +495,260 @@ class MainWindow(QMainWindow):
     
     def change_theme(self, theme):
         """Change application theme"""
-        # Theme changing would be implemented here
-        pass
+        self.current_theme = theme
+        self.apply_theme(theme)
+        self.save_settings()
     
-    def apply_theme(self):
+    def apply_theme(self, theme="Light"):
         """Apply the application theme"""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #f5f6fa;
+        if theme == "Dark":
+            # Dark Theme
+            self.setStyleSheet("""
+                QMainWindow {
+                    background-color: #1e1e1e;
+                    color: #e0e0e0;
+                }
+                QWidget {
+                    background-color: #1e1e1e;
+                    color: #e0e0e0;
+                }
+                QLabel {
+                    color: #e0e0e0;
+                }
+                QGroupBox {
+                    font-weight: bold;
+                    border: 2px solid #444444;
+                    border-radius: 8px;
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                    color: #e0e0e0;
+                }
+                QTabWidget::pane {
+                    border: 2px solid #444444;
+                    border-radius: 5px;
+                    background-color: #2d2d2d;
+                }
+                QTabBar::tab {
+                    background-color: #3d3d3d;
+                    color: #e0e0e0;
+                    padding: 10px 20px;
+                    margin-right: 2px;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px;
+                }
+                QTabBar::tab:selected {
+                    background-color: #2d2d2d;
+                    border-bottom: 2px solid #3498db;
+                }
+                QTextEdit {
+                    background-color: #252525;
+                    color: #e0e0e0;
+                    border: 1px solid #444444;
+                    border-radius: 5px;
+                }
+                QListWidget {
+                    background-color: #252525;
+                    color: #e0e0e0;
+                    border: 2px solid #444444;
+                    border-radius: 5px;
+                    padding: 5px;
+                }
+                QListWidget::item {
+                    padding: 8px;
+                    border-bottom: 1px solid #3d3d3d;
+                }
+                QListWidget::item:selected {
+                    background-color: #3498db;
+                    color: white;
+                }
+                QComboBox {
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                    border: 1px solid #444444;
+                    border-radius: 5px;
+                    padding: 5px;
+                }
+                QComboBox:hover {
+                    border: 1px solid #3498db;
+                }
+                QComboBox::drop-down {
+                    border: none;
+                }
+                QComboBox QAbstractItemView {
+                    background-color: #2d2d2d;
+                    color: #e0e0e0;
+                    selection-background-color: #3498db;
+                }
+                QProgressBar {
+                    border: 2px solid #444444;
+                    border-radius: 5px;
+                    text-align: center;
+                    height: 25px;
+                    background-color: #252525;
+                    color: #e0e0e0;
+                }
+                QProgressBar::chunk {
+                    background-color: #27ae60;
+                    border-radius: 3px;
+                }
+            """)
+            
+            # Update dynamic elements for dark theme
+            self.path_label.setStyleSheet("""
+                QLabel {
+                    padding: 10px;
+                    border: 2px dashed #3498db;
+                    border-radius: 5px;
+                    background-color: #252525;
+                    color: #e0e0e0;
+                }
+            """)
+        else:
+            # Light Theme  
+            self.setStyleSheet("""
+                QMainWindow {
+                    background-color: #f5f6fa;
+                    color: #2c3e50;
+                }
+                QWidget {
+                    background-color: #f5f6fa;
+                    color: #2c3e50;
+                }
+                QLabel {
+                    color: #2c3e50;
+                }
+                QGroupBox {
+                    font-weight: bold;
+                    border: 2px solid #bdc3c7;
+                    border-radius: 8px;
+                    margin-top: 10px;
+                    padding-top: 10px;
+                    background-color: white;
+                    color: #2c3e50;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                    color: #2c3e50;
+                }
+                QTabWidget::pane {
+                    border: 2px solid #bdc3c7;
+                    border-radius: 5px;
+                    background-color: white;
+                }
+                QTabBar::tab {
+                    background-color: #ecf0f1;
+                    color: #2c3e50;
+                    padding: 10px 20px;
+                    margin-right: 2px;
+                    border-top-left-radius: 5px;
+                    border-top-right-radius: 5px;
+                }
+                QTabBar::tab:selected {
+                    background-color: white;
+                    border-bottom: 2px solid #3498db;
+                }
+                QTextEdit {
+                    background-color: white;
+                    color: #2c3e50;
+                    border: 1px solid #bdc3c7;
+                    border-radius: 5px;
+                }
+                QListWidget {
+                    background-color: white;
+                    color: #2c3e50;
+                    border: 2px solid #bdc3c7;
+                    border-radius: 5px;
+                    padding: 5px;
+                }
+                QListWidget::item {
+                    padding: 8px;
+                    border-bottom: 1px solid #ecf0f1;
+                }
+                QListWidget::item:selected {
+                    background-color: #3498db;
+                    color: white;
+                }
+                QComboBox {
+                    background-color: white;
+                    color: #2c3e50;
+                    border: 1px solid #bdc3c7;
+                    border-radius: 5px;
+                    padding: 5px;
+                }
+                QComboBox:hover {
+                    border: 1px solid #3498db;
+                }
+                QComboBox::drop-down {
+                    border: none;
+                }
+                QComboBox QAbstractItemView {
+                    background-color: white;
+                    color: #2c3e50;
+                    selection-background-color: #3498db;
+                }
+                QProgressBar {
+                    border: 2px solid #bdc3c7;
+                    border-radius: 5px;
+                    text-align: center;
+                    height: 25px;
+                    background-color: white;
+                    color: #2c3e50;
+                }
+                QProgressBar::chunk {
+                    background-color: #27ae60;
+                    border-radius: 3px;
+                }
+            """)
+            
+            # Update dynamic elements for light theme
+            self.path_label.setStyleSheet("""
+                QLabel {
+                    padding: 10px;
+                    border: 2px dashed #3498db;
+                    border-radius: 5px;
+                    background-color: #ecf0f1;
+                    color: #2c3e50;
+                }
+            """)
+    
+    def load_settings(self):
+        """Load application settings"""
+        try:
+            settings_dir = os.path.join(os.path.expanduser("~"), ".linux-package-installer")
+            settings_file = os.path.join(settings_dir, "settings.json")
+            
+            if os.path.exists(settings_file):
+                with open(settings_file, 'r') as f:
+                    settings = json.load(f)
+                    self.current_theme = settings.get('theme', 'Light')
+        except Exception as e:
+            print(f"Error loading settings: {e}")
+            self.current_theme = "Light"
+    
+    def save_settings(self):
+        """Save application settings"""
+        try:
+            settings_dir = os.path.join(os.path.expanduser("~"), ".linux-package-installer")
+            os.makedirs(settings_dir, exist_ok=True)
+            settings_file = os.path.join(settings_dir, "settings.json")
+            
+            settings = {
+                'theme': self.current_theme
             }
-            QGroupBox {
-                font-weight: bold;
-                border: 2px solid #bdc3c7;
-                border-radius: 8px;
-                margin-top: 10px;
-                padding-top: 10px;
-                background-color: white;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-            }
-            QTabWidget::pane {
-                border: 2px solid #bdc3c7;
-                border-radius: 5px;
-                background-color: white;
-            }
-            QTabBar::tab {
-                background-color: #ecf0f1;
-                padding: 10px 20px;
-                margin-right: 2px;
-                border-top-left-radius: 5px;
-                border-top-right-radius: 5px;
-            }
-            QTabBar::tab:selected {
-                background-color: white;
-                border-bottom: 2px solid #3498db;
-            }
-        """)
+            
+            with open(settings_file, 'w') as f:
+                json.dump(settings, f, indent=2)
+        except Exception as e:
+            print(f"Error saving settings: {e}")
 
 
 def main():

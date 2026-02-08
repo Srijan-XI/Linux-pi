@@ -52,14 +52,44 @@ The application automatically detects your system's package manager:
 
 ## Installation
 
-### 1. Clone the Repository
+### Option 1: Quick Install (Recommended)
+
+Use the automated installation script that handles everything for you:
+
+```bash
+# Clone the repository
+git clone https://github.com/Srijan-XI/Linux-pi.git
+cd Linux-pi
+
+# Run the installation script
+chmod +x install.sh
+./install.sh
+```
+
+The `install.sh` script will:
+- ✅ Check for Python 3 and pip
+- ✅ Install all required dependencies
+- ✅ Create a desktop entry for easy access
+- ✅ Create a launcher script in `~/.local/bin`
+- ✅ Set up the application automatically
+
+After running the script, you can launch the application by:
+- Searching for "Linux Package Installer" in your application menu
+- Running `linux-package-installer` in terminal (if `~/.local/bin` is in your PATH)
+- Running `python3 main.py` from the project directory
+
+### Option 2: Manual Installation
+
+If you prefer manual installation or want more control:
+
+#### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Srijan-XI/Linux-pi.git
 cd Linux-pi
 ```
 
-### 2. Use a Virtual Environment (Recommended)
+#### 2. Use a Virtual Environment (Recommended)
 
 It's recommended to use a virtual environment to avoid conflicts with system packages:
 
@@ -68,7 +98,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Install Python Dependencies
+#### 3. Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -80,7 +110,7 @@ Or install manually:
 pip install PyQt5
 ```
 
-### 4. Make the Script Executable (Optional)
+#### 4. Make the Script Executable (Optional)
 
 ```bash
 chmod +x main.py
