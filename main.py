@@ -14,11 +14,11 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QMenu, QAction, QShortcut, QListWidgetItem, QLineEdit)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
 from PyQt5.QtGui import QIcon, QFont, QPalette, QColor, QKeySequence, QPixmap, QDragEnterEvent, QDropEvent
-from package_handler import PackageHandler
-from logger import InstallLogger
-import config
-import language
-from language import _  # Import translation function
+from src.package_handler import PackageHandler
+from src.logger import InstallLogger
+from src import config
+from src import language
+from src.language import _  # Import translation function
 import json
 import time
 

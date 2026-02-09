@@ -8,12 +8,12 @@ import gettext
 import os
 import json
 from pathlib import Path
-import config
+from . import config
 
 # ==================== PATHS ====================
 
-# Get the application directory
-APP_DIR = Path(__file__).parent.absolute()
+# Get the application directory (parent of src/)
+APP_DIR = Path(__file__).parent.parent.absolute()
 LOCALE_DIR = APP_DIR / 'locales'
 
 # ==================== GETTEXT SETUP ====================

@@ -83,7 +83,8 @@ def generate_mo(po_file, mo_file):
 
 def main():
     """Compile all .po files"""
-    locale_dir = Path(__file__).parent / 'locales'
+    # Get parent directory since we're now in utils/
+    locale_dir = Path(__file__).parent.parent / 'locales'
     
     print("=" * 60)
     print("SnapWiz Translation Compiler (JSON-based)")

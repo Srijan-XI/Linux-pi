@@ -177,6 +177,58 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
     echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
 fi
 
+# Ask if user wants to set up testing
+echo ""
+echo "======================================"
+echo "🧪 Test Setup (Optional)"
+echo "======================================"
+echo ""
+read -p "Do you want to install test dependencies? (y/n) " -n 1 -r
+echo ""
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Installing test dependencies..."
+    
+    # Install test dependencies
+    "$VENV_DIR/bin/pip" install coverage pytest pytest-cov
+    
+    if [ $? -eq 0 ]; then
+        echo "✓ Test dependencies installed"
+        
+        # Ask if user wants to run tests
+        echo ""
+        read -p "Do you want to run tests now? (y/n) " -n 1 -r
+        echo ""
+        
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo ""
+            echo "Running tests..."
+            echo ""
+            
+            cd "$INSTALL_DIR"
+            "$VENV_DIR/bin/python" -m test.run_tests
+            
+            TEST_RESULT=$?
+            
+            if [ $TEST_RESULT -eq 0 ]; then
+                echo ""
+                echo "✅ All tests passed!"
+            else
+                echo ""
+                echo "⚠ Some tests failed. Check the output above."
+            fi
+        fi
+    else
+        echo "✗ Failed to install test dependencies"
+    fi
+else
+    echo "Skipping test setup."
+    echo "To run tests later, install dependencies:"
+    echo "  $VENV_DIR/bin/pip install coverage pytest pytest-cov"
+    echo "Then run:"
+    echo "  $VENV_DIR/bin/python -m test.run_tests"
+fi
+
 echo ""
 echo "======================================"
 echo "⚡ Installation Complete! 🧙‍♂️"
@@ -186,6 +238,12 @@ echo "You can now run SnapWiz by:"
 echo "  1. Running: $VENV_DIR/bin/python $INSTALL_DIR/main.py"
 echo "  2. Running: snapwiz (if ~/.local/bin is in PATH)"
 echo "  3. Searching for 'SnapWiz' in your application menu"
+echo ""
+echo "To run tests:"
+echo "  $VENV_DIR/bin/python -m test.run_tests"
+echo ""
+echo "To view test documentation:"
+echo "  cat test/TESTING_GUIDE.md"
 echo ""
 echo "Note: The application uses a virtual environment at: $VENV_DIR"
 echo ""

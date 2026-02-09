@@ -4,10 +4,15 @@ Example implementation showing integration of custom exceptions and retry logic
 """
 
 import os
+import sys
 import subprocess
 import platform
-import config
-from exceptions import (
+
+# Add parent directory to path to import from src
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from src import config
+from src.exceptions import (
     PackageNotFoundError,
     InvalidPackageError,
     UnsupportedPackageFormatError,
@@ -16,9 +21,10 @@ from exceptions import (
     InstallationTimeoutError,
     InsufficientPrivilegesError,
     ServiceNotRunningError,
-    get_error_icon
+    get_error_icon,
+    is_retryable_error
 )
-from retry_utils import (
+from src.retry_utils import (
     retry_on_failure,
     NETWORK_RETRY_CONFIG,
     INSTALLATION_RETRY_CONFIG,
