@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QHBoxLayout, QPushButton, QLabel, QFileDialog, 
                              QProgressBar, QTextEdit, QTabWidget, QListWidget,
                              QMessageBox, QGroupBox, QComboBox, QSystemTrayIcon,
-                             QMenu, QAction, QShortcut, QListWidgetItem, QLineEdit)
+                             QMenu, QAction, QShortcut, QListWidgetItem, QLineEdit, QCheckBox)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QUrl
 from PyQt5.QtGui import QIcon, QFont, QPalette, QColor, QKeySequence, QPixmap, QDragEnterEvent, QDropEvent
 from src.package_handler import PackageHandler
@@ -2098,8 +2098,7 @@ class MainWindow(QMainWindow):
     def load_settings(self):
         """Load application settings"""
         try:
-            settings_dir = os.path.join(os.path.expanduser("~"), ".snapwiz")
-            settings_file = os.path.join(settings_dir, "settings.json")
+            settings_file = str(config.SETTINGS_FILE)
             
             if os.path.exists(settings_file):
                 with open(settings_file, 'r') as f:
@@ -2112,9 +2111,8 @@ class MainWindow(QMainWindow):
     def save_settings(self):
         """Save application settings"""
         try:
-            settings_dir = os.path.join(os.path.expanduser("~"), ".snapwiz")
-            os.makedirs(settings_dir, exist_ok=True)
-            settings_file = os.path.join(settings_dir, "settings.json")
+            config.ensure_config_dir()
+            settings_file = str(config.SETTINGS_FILE)
             
             settings = {
                 'theme': self.current_theme

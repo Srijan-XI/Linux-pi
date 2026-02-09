@@ -6,6 +6,7 @@ Handles logging of installation activities and history tracking
 import os
 import json
 from datetime import datetime
+from . import config
 
 
 class InstallLogger:
@@ -15,11 +16,10 @@ class InstallLogger:
         """Initialize logger with log directory"""
         if log_dir is None:
             # Use user's home directory for logs
-            home = os.path.expanduser("~")
-            log_dir = os.path.join(home, ".snapwiz")
+            log_dir = str(config.USER_CONFIG_DIR)
         
         self.log_dir = log_dir
-        self.log_file = os.path.join(log_dir, "installation_history.json")
+        self.log_file = str(config.HISTORY_FILE)
         
         # Create log directory if it doesn't exist
         os.makedirs(log_dir, exist_ok=True)
