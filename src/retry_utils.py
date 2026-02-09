@@ -6,7 +6,7 @@ Handles retrying operations that may fail due to temporary issues
 import time
 import functools
 from typing import Callable, Any, Tuple, Type
-from exceptions import (
+from .exceptions import (
     NetworkError, NetworkTimeoutError, DownloadError,
     InstallationTimeoutError, is_retryable_error
 )

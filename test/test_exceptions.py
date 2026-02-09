@@ -64,6 +64,7 @@ class TestPackageErrors(unittest.TestCase):
             reason="File is corrupted"
         )
         self.assertIn("corrupt.deb", exc.message)
+        assert exc.details is not None, "Exception should have details"
         self.assertIn("corrupted", exc.details.lower())
     
     def test_unsupported_format(self):
@@ -73,6 +74,7 @@ class TestPackageErrors(unittest.TestCase):
             detected_format=".txt"
         )
         self.assertIn(".txt", exc.message)
+        assert exc.details is not None, "Exception should have details"
         self.assertIn(".deb", exc.details)  # Should mention supported formats
 
 
@@ -83,6 +85,7 @@ class TestInstallationErrors(unittest.TestCase):
         """Test PackageManagerNotFoundError"""
         exc = PackageManagerNotFoundError("deb", "apt")
         self.assertIn("apt", exc.message)
+        assert exc.suggestion is not None, "Exception should have suggestion"
         self.assertIn("install", exc.suggestion.lower())
     
     def test_dependency_error(self):
@@ -142,6 +145,7 @@ class TestNetworkErrors(unittest.TestCase):
         """Test DownloadError"""
         exc = DownloadError("https://example.com/file.deb", reason="Connection failed")
         self.assertIn("example.com", exc.message)
+        assert exc.details is not None, "Exception should have details"
         self.assertIn("Connection failed", exc.details)
     
     def test_network_timeout(self):
@@ -158,6 +162,7 @@ class TestSystemErrors(unittest.TestCase):
         """Test ServiceNotRunningError"""
         exc = ServiceNotRunningError("snapd", "snap")
         self.assertIn("snapd", exc.message)
+        assert exc.suggestion is not None, "Exception should have suggestion"
         self.assertIn("systemctl", exc.suggestion)
     
     def test_disk_space_error(self):
@@ -165,6 +170,7 @@ class TestSystemErrors(unittest.TestCase):
         exc = DiskSpaceError(required_mb=500, available_mb=100)
         self.assertEqual(exc.required_mb, 500)
         self.assertEqual(exc.available_mb, 100)
+        assert exc.details is not None, "Exception should have details"
         self.assertIn("500", exc.details)
         self.assertIn("100", exc.details)
 

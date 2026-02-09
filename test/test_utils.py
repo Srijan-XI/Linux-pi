@@ -37,6 +37,7 @@ class TestEnvironment:
         if not self.temp_dir:
             self.setup()
         
+        assert self.temp_dir is not None, "Temp directory not initialized"
         filepath = os.path.join(self.temp_dir, filename)
         
         with open(filepath, 'wb') as f:
