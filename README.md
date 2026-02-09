@@ -479,18 +479,25 @@ If package information is not displayed:
 The application is built with a modular architecture:
 
 ```
-├── main.py              # Main application and GUI
-├── package_handler.py   # Package validation and installation logic
-├── logger.py            # Installation history and logging
-└── requirements.txt     # Python dependencies
+├── main.py                    # Main application and GUI
+├── requirements.txt           # Python dependencies
+└── src/
+    ├── config.py              # Centralized configuration and constants
+    ├── language.py            # Internationalization (i18n) support
+    ├── package_handler.py     # Package validation and installation logic
+    ├── logger.py              # Installation history and logging
+    ├── exceptions.py          # Custom exception classes
+    └── retry_utils.py         # Retry utilities for network operations
 ```
 
 ### Main Components
 
-- **MainWindow**: PyQt5-based GUI with tabs for installation, history, and settings
-- **PackageHandler**: Detects package manager, validates packages, extracts info, and handles installation
-- **InstallLogger**: Manages installation history with JSON-based persistence
-- **InstallerThread**: Background thread for non-blocking installations
+- **MainWindow**: PyQt5-based GUI with tabs for installation, batch operations, uninstall, history, and settings
+- **PackageHandler**: Detects package managers, validates packages (.deb/.rpm/.snap/.flatpak), extracts info, and handles installation
+- **InstallLogger**: Manages installation history with JSON-based persistence and export capabilities
+- **InstallerThread**: Background thread for non-blocking installations with progress reporting
+- **Language**: Manages multi-language support with 6 supported languages (EN, FR, DE, ES, IT, RU)
+- **Config**: Centralized configuration management for all application settings
 
 ## Security Considerations
 
@@ -517,16 +524,12 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 
 Planned features for future releases:
 
-- [ ] Multi-language support (i18n)
-- [ ] Package uninstallation feature
-- [ ] Batch package installation
 - [ ] Package search and download from repositories
-- [ ] System repository management
-- [ ] Package verification (GPG signatures)
-- [ ] Custom theme support (dark mode)
-- [ ] Export installation reports
+- [ ] System repository management  
 - [ ] Package downgrade capability
-- [ ] Flatpak and Snap support
+- [ ] Advanced package dependency visualization
+- [ ] Scheduled/automated updates
+- [ ] Integration with popular software centers
 
 ## License
 
@@ -534,15 +537,28 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Documentation
 
-Comprehensive documentation is available in the [`docs/`](docs/) folder:
+Comprehensive documentation is available:
 
+### Core Documentation
 - **[Keyboard Shortcuts](docs/KEYBOARD_SHORTCUTS.md)** - Quick reference for all shortcuts
-- **[UI/UX Enhancements](docs/UI_UX_ENHANCEMENTS.md)** - Complete feature guide
-- **[Enhancement Summary](docs/ENHANCEMENT_SUMMARY.md)** - Overview of all improvements
-- **[Changelog](docs/CHANGELOG.md)** - Version history and release notes
-- **[Contributing](docs/CONTRIBUTING.md)** - Guidelines for contributors
+- **[Features & Implementation](docs/FEATURES_AND_IMPLEMENTATION.md)** - Complete feature documentation
+- **[Development Guide](docs/DEVELOPMENT_GUIDE.md)** - Developer reference and contribution guide
+- **[Documentation Index](docs/INDEX.md)** - Complete documentation overview
 
-Visit the [docs folder](docs/) for detailed documentation on all features and functionality.
+### User Guides
+- **[Batch Installation Guide](GUIDE/BATCH_INSTALLATION_GUIDE.md)** - Multi-package installation walkthrough
+- **[Uninstall Guide](GUIDE/UNINSTALL_GUIDE.md)** - Package removal instructions
+- **[Export/Import Guide](GUIDE/EXPORT_IMPORT_GUIDE.md)** - History backup and restore
+- **[Language Support Guide](GUIDE/LANGUAGE_SUPPORT_GUIDE.md)** - Multi-language configuration
+- **[Verification Guide](GUIDE/VERIFICATION_GUIDE.md)** - Package integrity verification
+- **[Search & Filter Guide](GUIDE/SEARCH_FILTER_GUIDE.md)** - Advanced search features
+- **[Error Handling Guide](GUIDE/ERROR_HANDLING_GUIDE.md)** - Troubleshooting common issues
+
+### Project Files
+- **[Changelog](CHANGELOG.md)** - Version history and release notes
+- **[Contributing](CONTRIBUTING.md)** - Guidelines for contributors
+
+Visit the [docs folder](docs/) and [GUIDE folder](GUIDE/) for complete documentation.
 
 ## Acknowledgments
 
