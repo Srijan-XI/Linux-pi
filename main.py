@@ -433,8 +433,8 @@ class MainWindow(QMainWindow):
         # Create content widget
         content = QWidget()
         layout = QVBoxLayout(content)
-        layout.setSpacing(15)
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(20)
+        layout.setContentsMargins(15, 15, 15, 15)
         
         # Initialize installation queue
         self.install_queue = []
@@ -446,25 +446,31 @@ class MainWindow(QMainWindow):
             QGroupBox {
                 background: white;
                 border: none;
-                border-radius: 10px;
-                padding: 15px;
+                border-radius: 12px;
+                padding: 20px;
                 margin: 2px;
             }
         """)
         select_layout = QVBoxLayout()
+        select_layout.setSpacing(15)
         
-        # Section title
+        # Section title with description
         title_label = QLabel("📦 Add Packages")
-        title_label.setFont(QFont("Segoe UI", 13, QFont.Bold))
-        title_label.setStyleSheet("color: #2c3e50; margin-bottom: 8px;")
+        title_label.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        title_label.setStyleSheet("color: #2c3e50; margin-bottom: 5px;")
         select_layout.addWidget(title_label)
+        
+        desc_label = QLabel("Select .deb, .rpm, .snap, or .flatpak files to install")
+        desc_label.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-bottom: 10px;")
+        select_layout.addWidget(desc_label)
         
         # Buttons for adding packages
         button_row = QHBoxLayout()
+        button_row.setSpacing(12)
         
-        self.browse_btn = QPushButton("📂  Add Package")
-        self.browse_btn.setFixedHeight(40)
-        self.browse_btn.setFixedWidth(170)
+        self.browse_btn = QPushButton("📂  Browse & Add")
+        self.browse_btn.setFixedHeight(45)
+        self.browse_btn.setFixedWidth(180)
         self.browse_btn.setCursor(Qt.PointingHandCursor)
         self.browse_btn.setToolTip("Add one or more packages to the queue (Ctrl+O)")
         self.browse_btn.clicked.connect(self.browse_package)
@@ -474,7 +480,7 @@ class MainWindow(QMainWindow):
                     stop:0 #667eea, stop:1 #764ba2);
                 color: white;
                 padding: 12px 24px;
-                border-radius: 8px;
+                border-radius: 10px;
                 font-weight: 600;
                 font-size: 13px;
                 border: none;
@@ -482,6 +488,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #5568d3, stop:1 #6a3f8f);
+                transform: translateY(-1px);
             }
             QPushButton:pressed {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -490,9 +497,9 @@ class MainWindow(QMainWindow):
         """)
         button_row.addWidget(self.browse_btn)
         
-        self.clear_queue_btn = QPushButton("🗑️  Clear Queue")
-        self.clear_queue_btn.setFixedHeight(40)
-        self.clear_queue_btn.setFixedWidth(150)
+        self.clear_queue_btn = QPushButton("🗑️  Clear All")
+        self.clear_queue_btn.setFixedHeight(45)
+        self.clear_queue_btn.setFixedWidth(140)
         self.clear_queue_btn.setCursor(Qt.PointingHandCursor)
         self.clear_queue_btn.setToolTip("Remove all packages from the queue")
         self.clear_queue_btn.clicked.connect(self.clear_queue)
@@ -501,7 +508,7 @@ class MainWindow(QMainWindow):
                 background: white;
                 color: #e74c3c;
                 padding: 12px 24px;
-                border-radius: 8px;
+                border-radius: 10px;
                 font-weight: 600;
                 font-size: 13px;
                 border: 2px solid #e74c3c;
@@ -509,6 +516,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover {
                 background: #e74c3c;
                 color: white;
+                transform: translateY(-1px);
             }
             QPushButton:pressed {
                 background: #c0392b;
@@ -529,26 +537,28 @@ class MainWindow(QMainWindow):
             QGroupBox {
                 background: white;
                 border: none;
-                border-radius: 10px;
-                padding: 15px;
+                border-radius: 12px;
+                padding: 20px;
                 margin: 2px;
             }
         """)
         queue_layout = QVBoxLayout()
+        queue_layout.setSpacing(12)
         
         # Queue title with count
         queue_header = QHBoxLayout()
         queue_title = QLabel("📋 Installation Queue")
-        queue_title.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        queue_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
         queue_title.setStyleSheet("color: #2c3e50;")
         queue_header.addWidget(queue_title)
         
         self.queue_status_label = QLabel("0 packages")
         self.queue_status_label.setStyleSheet("""
             color: white;
-            background: #667eea;
-            padding: 4px 12px;
-            border-radius: 12px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #667eea, stop:1 #764ba2);
+            padding: 6px 14px;
+            border-radius: 14px;
             font-size: 11px;
             font-weight: 600;
         """)
@@ -556,8 +566,23 @@ class MainWindow(QMainWindow):
         queue_header.addStretch()
         queue_layout.addLayout(queue_header)
         
+        # Empty state message
+        self.queue_empty_label = QLabel("📭 Queue is empty\n\nClick 'Browse & Add' to add packages")
+        self.queue_empty_label.setAlignment(Qt.AlignCenter)
+        self.queue_empty_label.setStyleSheet("""
+            color: #95a5a6;
+            font-size: 12px;
+            padding: 30px;
+            background: rgba(102, 126, 234, 0.03);
+            border: 2px dashed #ecf0f1;
+            border-radius: 8px;
+            margin-top: 10px;
+        """)
+        queue_layout.addWidget(self.queue_empty_label)
+        
         self.queue_list = QListWidget()
-        self.queue_list.setMaximumHeight(150)
+        self.queue_list.setMinimumHeight(120)
+        self.queue_list.setMaximumHeight(180)
         self.queue_list.setToolTip("Right-click to remove individual packages")
         self.queue_list.setContextMenuPolicy(Qt.CustomContextMenu)
         self.queue_list.customContextMenuRequested.connect(self.show_queue_context_menu)
@@ -570,20 +595,24 @@ class MainWindow(QMainWindow):
                 margin-top: 10px;
             }
             QListWidget::item {
-                padding: 10px;
+                padding: 12px;
                 border-bottom: 1px solid #ecf0f1;
-                border-radius: 4px;
-                margin: 2px 0;
+                border-radius: 6px;
+                margin: 3px 0;
+                background: white;
             }
             QListWidget::item:hover {
-                background: #f0f0f0;
-            }
-            QListWidget::item:selected {
-                background: rgba(102, 126, 234, 0.1);
-                color: #667eea;
+                background: #f8f9fa;
                 border: 1px solid #667eea;
             }
+            QListWidget::item:selected {
+                background: rgba(102, 126, 234, 0.15);
+                color: #667eea;
+                border: 2px solid #667eea;
+                font-weight: 600;
+            }
         """)
+        self.queue_list.hide()  # Initially hidden
         queue_layout.addWidget(self.queue_list)
         
         queue_group.setLayout(queue_layout)
@@ -595,44 +624,47 @@ class MainWindow(QMainWindow):
             QGroupBox {
                 background: white;
                 border: none;
-                border-radius: 10px;
-                padding: 15px;
+                border-radius: 12px;
+                padding: 20px;
                 margin: 2px;
             }
         """)
         progress_layout = QVBoxLayout()
+        progress_layout.setSpacing(15)
         
         # Progress title
         progress_title = QLabel("⚡ Installation Progress")
-        progress_title.setFont(QFont("Segoe UI", 13, QFont.Bold))
-        progress_title.setStyleSheet("color: #2c3e50; margin-bottom: 8px;")
+        progress_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        progress_title.setStyleSheet("color: #2c3e50; margin-bottom: 5px;")
         progress_layout.addWidget(progress_title)
         
         # Installation steps display
-        self.steps_label = QLabel("Ready to install")
+        self.steps_label = QLabel("✨ Ready to install packages")
         self.steps_label.setAlignment(Qt.AlignCenter)
         self.steps_label.setStyleSheet("""
             font-size: 13px;
             font-weight: 600;
-            padding: 12px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 8px;
+            padding: 15px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(102, 126, 234, 0.1), stop:1 rgba(118, 75, 162, 0.1));
+            border-radius: 10px;
             color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
         """)
         progress_layout.addWidget(self.steps_label)
         
         # Current package progress
-        current_label = QLabel("Current Package:")
-        current_label.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-top: 15px;")
+        current_label = QLabel("📦 Current Package Progress:")
+        current_label.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-top: 5px; font-weight: 600;")
         progress_layout.addWidget(current_label)
         
         self.progress_bar = QProgressBar()
         self.progress_bar.setToolTip("Current package installation progress")
-        self.progress_bar.setFixedHeight(30)
+        self.progress_bar.setFixedHeight(32)
         self.progress_bar.setStyleSheet("""
             QProgressBar {
                 border: none;
-                border-radius: 15px;
+                border-radius: 16px;
                 text-align: center;
                 background: #ecf0f1;
                 color: white;
@@ -642,24 +674,39 @@ class MainWindow(QMainWindow):
             QProgressBar::chunk {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #667eea, stop:1 #764ba2);
-                border-radius: 15px;
+                border-radius: 16px;
             }
         """)
         progress_layout.addWidget(self.progress_bar)
         
         # Overall batch progress
+        batch_progress_container = QHBoxLayout()
+        batch_icon = QLabel("📊")
+        batch_icon.setStyleSheet("font-size: 14px;")
+        batch_progress_container.addWidget(batch_icon)
+        
         self.batch_progress_label = QLabel("Overall: 0 of 0 packages")
         self.batch_progress_label.setStyleSheet("""
             font-weight: 600;
-            margin-top: 8px;
+            margin-top: 5px;
             color: #2c3e50;
             font-size: 12px;
         """)
-        progress_layout.addWidget(self.batch_progress_label)
+        batch_progress_container.addWidget(self.batch_progress_label)
+        batch_progress_container.addStretch()
+        progress_layout.addLayout(batch_progress_container)
         
-        self.status_label = QLabel("Ready to install")
+        self.status_label = QLabel("Waiting for packages...")
         self.status_label.setAlignment(Qt.AlignCenter)
-        self.status_label.setStyleSheet("color: #95a5a6; font-style: italic; font-size: 11px; margin-top: 5px;")
+        self.status_label.setStyleSheet("""
+            color: #95a5a6; 
+            font-style: italic; 
+            font-size: 11px; 
+            margin-top: 8px;
+            padding: 8px;
+            background: rgba(149, 165, 166, 0.05);
+            border-radius: 6px;
+        """)
         progress_layout.addWidget(self.status_label)
         
         progress_group.setLayout(progress_layout)
@@ -671,44 +718,74 @@ class MainWindow(QMainWindow):
             QGroupBox {
                 background: white;
                 border: none;
-                border-radius: 10px;
-                padding: 15px;
+                border-radius: 12px;
+                padding: 20px;
                 margin: 2px;
             }
         """)
         log_layout = QVBoxLayout()
+        log_layout.setSpacing(12)
         
+        log_header = QHBoxLayout()
         log_title = QLabel("📝 Installation Log")
-        log_title.setFont(QFont("Segoe UI", 13, QFont.Bold))
-        log_title.setStyleSheet("color: #2c3e50; margin-bottom: 8px;")
-        log_layout.addWidget(log_title)
+        log_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        log_title.setStyleSheet("color: #2c3e50;")
+        log_header.addWidget(log_title)
+        log_header.addStretch()
+        
+        # Add clear log button
+        clear_log_btn = QPushButton("🗑️ Clear")
+        clear_log_btn.setFixedHeight(28)
+        clear_log_btn.setCursor(Qt.PointingHandCursor)
+        clear_log_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: #95a5a6;
+                padding: 4px 12px;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                border: 1px solid #ecf0f1;
+            }
+            QPushButton:hover {
+                background: #ecf0f1;
+                color: #7f8c8d;
+            }
+        """)
+        clear_log_btn.clicked.connect(lambda: self.log_output.clear())
+        log_header.addWidget(clear_log_btn)
+        log_layout.addLayout(log_header)
         
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
-        self.log_output.setMaximumHeight(100)
+        self.log_output.setMinimumHeight(100)
+        self.log_output.setMaximumHeight(120)
         self.log_output.setToolTip("Installation commands and output")
         self.log_output.setStyleSheet("""
             QTextEdit {
                 background: #2c3e50;
                 color: #ecf0f1;
-                border: none;
+                border: 2px solid #34495e;
                 border-radius: 8px;
-                padding: 10px;
+                padding: 12px;
                 font-family: 'Consolas', 'Courier New', monospace;
                 font-size: 11px;
+                line-height: 1.4;
             }
         """)
+        self.log_output.append("💡 Welcome to SnapWiz! Add packages to get started.")
         log_layout.addWidget(self.log_output)
         log_group.setLayout(log_layout)
         layout.addWidget(log_group)
         
         # Action buttons
         button_layout = QHBoxLayout()
+        button_layout.setSpacing(12)
         button_layout.addStretch()
         
         self.install_btn = QPushButton("✨  Start Installation")
-        self.install_btn.setFixedHeight(45)
-        self.install_btn.setFixedWidth(230)
+        self.install_btn.setFixedHeight(50)
+        self.install_btn.setFixedWidth(240)
         self.install_btn.setCursor(Qt.PointingHandCursor)
         self.install_btn.setEnabled(False)
         self.install_btn.setToolTip("Install all packages in the queue (Ctrl+I)")
@@ -719,7 +796,7 @@ class MainWindow(QMainWindow):
                     stop:0 #11998e, stop:1 #38ef7d);
                 color: white;
                 padding: 15px 30px;
-                border-radius: 10px;
+                border-radius: 12px;
                 font-size: 15px;
                 font-weight: bold;
                 border: none;
@@ -727,6 +804,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #0e8070, stop:1 #2dd164);
+                transform: translateY(-2px);
             }
             QPushButton:pressed {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -734,13 +812,14 @@ class MainWindow(QMainWindow):
             }
             QPushButton:disabled {
                 background: #bdc3c7;
+                color: #ecf0f1;
             }
         """)
         button_layout.addWidget(self.install_btn)
         
         self.cancel_btn = QPushButton("⏹️  Cancel")
-        self.cancel_btn.setFixedHeight(45)
-        self.cancel_btn.setFixedWidth(130)
+        self.cancel_btn.setFixedHeight(50)
+        self.cancel_btn.setFixedWidth(140)
         self.cancel_btn.setCursor(Qt.PointingHandCursor)
         self.cancel_btn.setEnabled(False)
         self.cancel_btn.setToolTip("Cancel the current batch installation")
@@ -750,7 +829,7 @@ class MainWindow(QMainWindow):
                 background: white;
                 color: #e74c3c;
                 padding: 15px 30px;
-                border-radius: 10px;
+                border-radius: 12px;
                 font-size: 15px;
                 font-weight: bold;
                 border: 2px solid #e74c3c;
@@ -758,6 +837,7 @@ class MainWindow(QMainWindow):
             QPushButton:hover {
                 background: #e74c3c;
                 color: white;
+                transform: translateY(-2px);
             }
             QPushButton:pressed {
                 background: #c0392b;
@@ -1127,33 +1207,98 @@ class MainWindow(QMainWindow):
     
     
     def create_settings_tab(self):
-        """Create the settings tab"""
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
+        """Create the settings tab with modern card-based design"""
+        from PyQt5.QtWidgets import QScrollArea
         
-        # Theme settings
-        theme_group = QGroupBox("🎨 Appearance")
-        theme_group.setToolTip("Customize the application appearance")
+        # Create scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        
+        # Create content widget
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        layout.setSpacing(20)
+        layout.setContentsMargins(15, 15, 15, 15)
+        
+        # Appearance Settings Card
+        theme_group = QGroupBox()
+        theme_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 2px;
+            }
+        """)
         theme_layout = QVBoxLayout()
+        theme_layout.setSpacing(15)
         
+        # Section title
+        theme_title = QLabel("🎨 Appearance")
+        theme_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        theme_title.setStyleSheet("color: #2c3e50; margin-bottom: 5px;")
+        theme_layout.addWidget(theme_title)
+        
+        theme_desc = QLabel("Customize how SnapWiz looks")
+        theme_desc.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-bottom: 10px;")
+        theme_layout.addWidget(theme_desc)
+        
+        # Theme selector
+        theme_row = QHBoxLayout()
         theme_label = QLabel("Theme:")
-        theme_layout.addWidget(theme_label)
+        theme_label.setStyleSheet("color: #2c3e50; font-weight: 600; font-size: 12px;")
+        theme_label.setFixedWidth(100)
+        theme_row.addWidget(theme_label)
         
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Light", "Dark"])
         self.theme_combo.setCurrentText(self.current_theme)
         self.theme_combo.setToolTip("Choose between light and dark theme")
+        self.theme_combo.setFixedHeight(36)
         self.theme_combo.currentTextChanged.connect(self.change_theme)
-        theme_layout.addWidget(self.theme_combo)
+        self.theme_combo.setStyleSheet("""
+            QComboBox {
+                background: #f8f9fa;
+                border: 2px solid #ecf0f1;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 12px;
+                color: #2c3e50;
+            }
+            QComboBox:hover {
+                border-color: #667eea;
+            }
+            QComboBox::drop-down {
+                border: none;
+                padding-right: 10px;
+            }
+            QComboBox QAbstractItemView {
+                background: white;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                selection-background-color: rgba(102, 126, 234, 0.2);
+                selection-color: #2c3e50;
+                padding: 5px;
+            }
+        """)
+        theme_row.addWidget(self.theme_combo)
+        theme_row.addStretch()
+        theme_layout.addLayout(theme_row)
         
         # Language selector
+        lang_row = QHBoxLayout()
         lang_label = QLabel("Language:")
-        theme_layout.addWidget(lang_label)
+        lang_label.setStyleSheet("color: #2c3e50; font-weight: 600; font-size: 12px;")
+        lang_label.setFixedWidth(100)
+        lang_row.addWidget(lang_label)
         
         self.language_combo = QComboBox()
         # Add all supported languages
         for code, name in language.get_available_languages():
-            self.language_combo.addItem(f"{name}", code)  # Display name, store code
+            self.language_combo.addItem(f"{name}", code)
         
         # Set current language
         current_lang = language.get_current_language()
@@ -1161,112 +1306,293 @@ class MainWindow(QMainWindow):
         if index >= 0:
             self.language_combo.setCurrentIndex(index)
         
-        self.language_combo.setToolTip("Choose your preferred language / Choisissez votre langue / Wählen Sie Ihre Sprache")
+        self.language_combo.setToolTip("Choose your preferred language")
+        self.language_combo.setFixedHeight(36)
         self.language_combo.currentIndexChanged.connect(self.change_language)
-        theme_layout.addWidget(self.language_combo)
+        self.language_combo.setStyleSheet("""
+            QComboBox {
+                background: #f8f9fa;
+                border: 2px solid #ecf0f1;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 12px;
+                color: #2c3e50;
+            }
+            QComboBox:hover {
+                border-color: #667eea;
+            }
+            QComboBox::drop-down {
+                border: none;
+                padding-right: 10px;
+            }
+            QComboBox QAbstractItemView {
+                background: white;
+                border: 2px solid #667eea;
+                border-radius: 8px;
+                selection-background-color: rgba(102, 126, 234, 0.2);
+                selection-color: #2c3e50;
+                padding: 5px;
+            }
+        """)
+        lang_row.addWidget(self.language_combo)
+        lang_row.addStretch()
+        theme_layout.addLayout(lang_row)
         
         theme_group.setLayout(theme_layout)
         layout.addWidget(theme_group)
         
-        # Package manager settings
-        pm_group = QGroupBox("📦 Package Manager")
-        pm_group.setToolTip("Information about your system's package manager")
+        # Package Manager Card
+        pm_group = QGroupBox()
+        pm_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 2px;
+            }
+        """)
         pm_layout = QVBoxLayout()
+        pm_layout.setSpacing(15)
         
-        pm_info = QLabel("Detected Package Manager:")
-        pm_layout.addWidget(pm_info)
+        pm_title = QLabel("📦 Package Manager")
+        pm_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        pm_title.setStyleSheet("color: #2c3e50; margin-bottom: 5px;")
+        pm_layout.addWidget(pm_title)
+        
+        pm_desc = QLabel("System package manager information")
+        pm_desc.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-bottom: 10px;")
+        pm_layout.addWidget(pm_desc)
         
         detected_pm = self.package_handler.detect_package_manager()
-        pm_label = QLabel(f"<b>{detected_pm.upper()}</b>")
-        pm_label.setToolTip(f"Your system uses {detected_pm} for package management")
-        pm_layout.addWidget(pm_label)
+        pm_display = QLabel(f"<span style='color: #7f8c8d;'>Detected:</span> <b style='color: #667eea; font-size: 14px;'>{detected_pm.upper()}</b>")
+        pm_display.setStyleSheet("""
+            padding: 12px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(102, 126, 234, 0.05), stop:1 rgba(118, 75, 162, 0.05));
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        """)
+        pm_display.setToolTip(f"Your system uses {detected_pm} for package management")
+        pm_layout.addWidget(pm_display)
         
         pm_group.setLayout(pm_layout)
         layout.addWidget(pm_group)
         
-        # Package Verification settings
-        verify_group = QGroupBox("🔐 Package Verification")
-        verify_group.setToolTip("Configure security and integrity checks for packages")
+        # Package Verification Card
+        verify_group = QGroupBox()
+        verify_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 2px;
+            }
+        """)
         verify_layout = QVBoxLayout()
+        verify_layout.setSpacing(15)
         
-        verify_info = QLabel("Enable verification checks before installation:")
-        verify_info.setWordWrap(True)
-        verify_layout.addWidget(verify_info)
+        verify_title = QLabel("🔐 Security & Verification")
+        verify_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        verify_title.setStyleSheet("color: #2c3e50; margin-bottom: 5px;")
+        verify_layout.addWidget(verify_title)
+        
+        verify_desc = QLabel("Configure security checks for package installation")
+        verify_desc.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-bottom: 10px;")
+        verify_layout.addWidget(verify_desc)
         
         # Integrity check checkbox
-        self.verify_integrity_checkbox = QCheckBox("✓ Always verify package integrity")
-        self.verify_integrity_checkbox.setChecked(True)  # Enabled by default
+        self.verify_integrity_checkbox = QCheckBox("  Always verify package integrity")
+        self.verify_integrity_checkbox.setChecked(True)
         self.verify_integrity_checkbox.setToolTip("Check if package file is valid and not corrupted")
+        self.verify_integrity_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #2c3e50;
+                font-size: 12px;
+                font-weight: 500;
+                padding: 8px;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+                border-radius: 6px;
+                border: 2px solid #ecf0f1;
+                background: white;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #667eea;
+            }
+            QCheckBox::indicator:checked {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #667eea, stop:1 #764ba2);
+                border-color: #667eea;
+            }
+        """)
         verify_layout.addWidget(self.verify_integrity_checkbox)
         
         # GPG signature checkbox
-        self.verify_signature_checkbox = QCheckBox("✓ Verify GPG signatures (if available)")
-        self.verify_signature_checkbox.setChecked(False)  # Disabled by default (optional)
+        self.verify_signature_checkbox = QCheckBox("  Verify GPG signatures (if available)")
+        self.verify_signature_checkbox.setChecked(False)
         self.verify_signature_checkbox.setToolTip("Verify package signatures using GPG (requires .asc or .sig files)")
+        self.verify_signature_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #2c3e50;
+                font-size: 12px;
+                font-weight: 500;
+                padding: 8px;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+                border-radius: 6px;
+                border: 2px solid #ecf0f1;
+                background: white;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #667eea;
+            }
+            QCheckBox::indicator:checked {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #667eea, stop:1 #764ba2);
+                border-color: #667eea;
+            }
+        """)
         verify_layout.addWidget(self.verify_signature_checkbox)
         
-        # Checksum verification section
-        checksum_label = QLabel("\\nOptional: Verify checksum (SHA256/MD5):")
-        checksum_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        verify_layout.addWidget(checksum_label)
+        # Separator
+        separator = QLabel()
+        separator.setFixedHeight(1)
+        separator.setStyleSheet("background: #ecf0f1; margin: 10px 0;")
+        verify_layout.addWidget(separator)
+        
+        # Checksum section
+        checksum_header = QLabel("Optional Checksum Verification")
+        checksum_header.setStyleSheet("color: #2c3e50; font-weight: 600; font-size: 12px; margin-top: 5px;")
+        verify_layout.addWidget(checksum_header)
         
         checksum_info = QLabel("Leave blank to skip checksum verification")
-        checksum_info.setStyleSheet("color: #7f8c8d; font-style: italic; font-size: 10px;")
+        checksum_info.setStyleSheet("color: #95a5a6; font-style: italic; font-size: 10px; margin-bottom: 8px;")
         verify_layout.addWidget(checksum_info)
         
         # Checksum type selector
-        checksum_type_layout = QHBoxLayout()
-        checksum_type_label = QLabel("Type:")
-        checksum_type_layout.addWidget(checksum_type_label)
+        checksum_type_row = QHBoxLayout()
+        checksum_type_label = QLabel("Algorithm:")
+        checksum_type_label.setStyleSheet("color: #2c3e50; font-weight: 600; font-size: 11px;")
+        checksum_type_label.setFixedWidth(80)
+        checksum_type_row.addWidget(checksum_type_label)
         
         self.checksum_type_combo = QComboBox()
         self.checksum_type_combo.addItems(["SHA256", "MD5"])
         self.checksum_type_combo.setToolTip("Choose checksum algorithm")
-        checksum_type_layout.addWidget(self.checksum_type_combo)
-        checksum_type_layout.addStretch()
-        verify_layout.addLayout(checksum_type_layout)
+        self.checksum_type_combo.setFixedHeight(34)
+        self.checksum_type_combo.setFixedWidth(120)
+        self.checksum_type_combo.setStyleSheet("""
+            QComboBox {
+                background: #f8f9fa;
+                border: 2px solid #ecf0f1;
+                border-radius: 8px;
+                padding: 6px 10px;
+                font-size: 11px;
+                color: #2c3e50;
+            }
+            QComboBox:hover {
+                border-color: #667eea;
+            }
+        """)
+        checksum_type_row.addWidget(self.checksum_type_combo)
+        checksum_type_row.addStretch()
+        verify_layout.addLayout(checksum_type_row)
         
         # Checksum input
-        checksum_input_layout = QHBoxLayout()
+        checksum_input_row = QHBoxLayout()
         checksum_input_label = QLabel("Checksum:")
-        checksum_input_layout.addWidget(checksum_input_label)
+        checksum_input_label.setStyleSheet("color: #2c3e50; font-weight: 600; font-size: 11px;")
+        checksum_input_label.setFixedWidth(80)
+        checksum_input_row.addWidget(checksum_input_label)
         
         self.checksum_input = QLineEdit()
-        self.checksum_input.setPlaceholderText("Enter expected checksum (optional)...")
+        self.checksum_input.setPlaceholderText("Enter expected checksum hash...")
         self.checksum_input.setToolTip("Paste the expected checksum value from the package source")
-        checksum_input_layout.addWidget(self.checksum_input)
-        verify_layout.addLayout(checksum_input_layout)
+        self.checksum_input.setFixedHeight(34)
+        self.checksum_input.setStyleSheet("""
+            QLineEdit {
+                background: #f8f9fa;
+                border: 2px solid #ecf0f1;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 11px;
+                color: #2c3e50;
+                font-family: 'Consolas', monospace;
+            }
+            QLineEdit:hover {
+                border-color: #667eea;
+            }
+            QLineEdit:focus {
+                border-color: #667eea;
+                background: white;
+            }
+        """)
+        checksum_input_row.addWidget(self.checksum_input)
+        verify_layout.addLayout(checksum_input_row)
         
         verify_group.setLayout(verify_layout)
         layout.addWidget(verify_group)
         
-        # About section
-        about_group = QGroupBox("ℹ️ About")
-        about_group.setToolTip("Information about this application")
+        # About Card
+        about_group = QGroupBox()
+        about_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 2px;
+            }
+        """)
         about_layout = QVBoxLayout()
+        about_layout.setSpacing(15)
+        
+        about_title = QLabel("ℹ️ About SnapWiz")
+        about_title.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        about_title.setStyleSheet("color: #2c3e50; margin-bottom: 5px;")
+        about_layout.addWidget(about_title)
         
         about_text = QLabel(
-            "<h3>⚡🧙‍♂️ SnapWiz v1.0</h3>"
-            "<p><i>Install packages in a snap, like a wizard!</i></p>"
-            "<p>A magical tool to help Linux users install .deb and .rpm packages.</p>"
-            "<p><b>Author:</b> Srijan-XI</p>"
-            "<p><b>License:</b> MIT License</p>"
-            "<p><b>Keyboard Shortcuts:</b></p>"
-            "<ul>"
-            "<li>Ctrl+O - Open file</li>"
-            "<li>Ctrl+I - Install package</li>"
-            "<li>F5 - Refresh history</li>"
-            "<li>Ctrl+Q - Quit application</li>"
-            "</ul>"
+            "<div style='line-height: 1.6;'>"
+            "<p style='font-size: 13px; color: #667eea; font-weight: 600; margin: 0;'>⚡🧙‍♂️ SnapWiz v1.0</p>"
+            "<p style='font-size: 11px; color: #7f8c8d; font-style: italic; margin: 5px 0 15px 0;'>"
+            "Install packages in a snap, like a wizard!</p>"
+            "<p style='font-size: 11px; color: #2c3e50; margin: 8px 0;'>"
+            "A magical tool to help Linux users install .deb, .rpm, .snap, and .flatpak packages.</p>"
+            "<p style='font-size: 11px; color: #2c3e50; margin: 8px 0;'>"
+            "<b>Author:</b> Srijan-XI<br>"
+            "<b>License:</b> MIT License</p>"
+            "<p style='font-size: 11px; color: #2c3e50; font-weight: 600; margin-top: 15px; margin-bottom: 8px;'>"
+            "⌨️ Keyboard Shortcuts:</p>"
+            "<div style='background: rgba(102, 126, 234, 0.05); padding: 12px; border-radius: 8px; "
+            "border-left: 3px solid #667eea; font-size: 11px; color: #2c3e50;'>"
+            "<b>Ctrl+O</b> - Open file dialog<br>"
+            "<b>Ctrl+I</b> - Start installation<br>"
+            "<b>F5</b> - Refresh history<br>"
+            "<b>Ctrl+Q</b> - Quit application"
+            "</div>"
+            "</div>"
         )
         about_text.setWordWrap(True)
+        about_text.setTextFormat(Qt.RichText)
         about_layout.addWidget(about_text)
         
         about_group.setLayout(about_layout)
         layout.addWidget(about_group)
         
         layout.addStretch()
-        return tab
+        
+        # Set content widget to scroll area
+        scroll.setWidget(content)
+        return scroll
     
     def browse_package(self):
         """Open file dialog to select one or more packages"""
@@ -1290,6 +1616,15 @@ class MainWindow(QMainWindow):
     def update_queue_display(self):
         """Update the queue list widget"""
         self.queue_list.clear()
+        queue_length = len(self.install_queue)
+        
+        # Show/hide empty state
+        if queue_length == 0:
+            self.queue_list.hide()
+            self.queue_empty_label.show()
+        else:
+            self.queue_list.show()
+            self.queue_empty_label.hide()
         
         for i, package_path in enumerate(self.install_queue):
             package_name = os.path.basename(package_path)
@@ -1305,8 +1640,7 @@ class MainWindow(QMainWindow):
             self.queue_list.addItem(item_text)
         
         # Update queue status
-        queue_length = len(self.install_queue)
-        self.queue_status_label.setText(f"Queue: {queue_length} package{'s' if queue_length !=1 else ''}")
+        self.queue_status_label.setText(f"{queue_length} package{'s' if queue_length != 1 else ''}")
         
         # Enable/disable install button
         self.install_btn.setEnabled(queue_length > 0)
