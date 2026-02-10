@@ -139,7 +139,7 @@ class MainWindow(QMainWindow):
         self.apply_theme(self.current_theme)
         
     def init_ui(self):
-        """Initialize the user interface"""
+        """Initialize the user interface with modern design"""
         self.setWindowTitle(config.WINDOW_TITLE)
         self.setGeometry(100, 100, config.WINDOW_WIDTH, config.WINDOW_HEIGHT)
         self.setMinimumSize(config.WINDOW_MIN_WIDTH, config.WINDOW_MIN_HEIGHT)
@@ -151,40 +151,132 @@ class MainWindow(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
-        main_layout.setSpacing(15)
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Header
-        header = QLabel(config.ICONS['app'] + " " + config.APP_NAME)
+        # Modern Header with gradient background
+        header_container = QWidget()
+        header_container.setObjectName("headerContainer")
+        header_container.setStyleSheet("""
+            #headerContainer {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #667eea, stop:0.5 #764ba2, stop:1 #f093fb);
+                border-radius: 0px;
+                padding: 30px;
+            }
+        """)
+        header_layout = QVBoxLayout(header_container)
+        header_layout.setSpacing(8)
+        header_layout.setContentsMargins(20, 20, 20, 20)
+        
+        # App icon and title
+        header = QLabel("🧙‍♂️ " + config.APP_NAME)
         header.setAlignment(Qt.AlignCenter)
-        header_font = QFont("Arial", config.HEADER_FONT_SIZE, QFont.Bold)
+        header_font = QFont("Segoe UI", 28, QFont.Bold)
         header.setFont(header_font)
+        header.setStyleSheet("""
+            color: white;
+            background: transparent;
+        """)
         header.setToolTip(config.APP_DESCRIPTION)
-        main_layout.addWidget(header)
+        header_layout.addWidget(header)
         
-        subtitle = QLabel("The magical way to install .deb, .rpm, .snap, and .flatpak packages")
+        # Subtitle with better styling
+        subtitle = QLabel("The magical way to install packages")
         subtitle.setAlignment(Qt.AlignCenter)
-        subtitle_font = QFont("Arial", config.SUBTITLE_FONT_SIZE)
+        subtitle_font = QFont("Segoe UI", 12)
         subtitle.setFont(subtitle_font)
-        subtitle.setStyleSheet("color: #666; margin-bottom: 10px;")
-        main_layout.addWidget(subtitle)
+        subtitle.setStyleSheet("""
+            color: rgba(255, 255, 255, 0.95);
+            background: transparent;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        """)
+        header_layout.addWidget(subtitle)
         
-        # Drag and drop hint
-        drag_hint = QLabel("💡 Tip: Drag and drop package files here to add them!")
+        # Supported formats badge
+        formats_label = QLabel("📦 .deb  •  .rpm  •  .snap  •  .flatpak")
+        formats_label.setAlignment(Qt.AlignCenter)
+        formats_font = QFont("Segoe UI", 10)
+        formats_label.setFont(formats_font)
+        formats_label.setStyleSheet("""
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 10px;
+        """)
+        header_layout.addWidget(formats_label, 0, Qt.AlignCenter)
+        
+        main_layout.addWidget(header_container)
+        
+        # Content area with padding
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        content_layout.setSpacing(15)
+        content_layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Drag and drop hint with modern styling
+        drag_hint = QLabel("💡 Pro Tip: Drag & drop package files anywhere to add them instantly!")
         drag_hint.setAlignment(Qt.AlignCenter)
-        drag_hint.setStyleSheet("color: #3498db; font-style: italic; font-size: 10px;")
-        main_layout.addWidget(drag_hint)
+        drag_hint.setStyleSheet("""
+            color: #667eea;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(102, 126, 234, 0.1), stop:0.5 rgba(118, 75, 162, 0.1), stop:1 rgba(240, 147, 251, 0.1));
+            font-style: italic;
+            font-size: 11px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        """)
+        content_layout.addWidget(drag_hint)
         
-        # Create tab widget
+        # Create modern tab widget
         self.tabs = QTabWidget()
-        self.tabs.addTab(self.create_install_tab(), config.TAB_NAMES['install'])
-        self.tabs.addTab(self.create_uninstall_tab(), config.TAB_NAMES['uninstall'])
-        self.tabs.addTab(self.create_history_tab(), config.TAB_NAMES['history'])
-        self.tabs.addTab(self.create_settings_tab(), config.TAB_NAMES['settings'])
-        main_layout.addWidget(self.tabs)
+        self.tabs.setDocumentMode(True)
+        self.tabs.setStyleSheet("""
+            QTabWidget::pane {
+                border: none;
+                background: transparent;
+            }
+            QTabBar::tab {
+                background: transparent;
+                color: #666;
+                padding: 12px 24px;
+                margin-right: 4px;
+                border: none;
+                border-bottom: 3px solid transparent;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QTabBar::tab:selected {
+                color: #667eea;
+                border-bottom: 3px solid #667eea;
+            }
+            QTabBar::tab:hover {
+                color: #764ba2;
+                background: rgba(102, 126, 234, 0.05);
+            }
+        """)
         
-        # Status bar for shortcuts
-        self.statusBar().showMessage(config.SHORTCUTS_DISPLAY)
+        self.tabs.addTab(self.create_install_tab(), "📥 Install")
+        self.tabs.addTab(self.create_uninstall_tab(), "🗑️ Uninstall")
+        self.tabs.addTab(self.create_history_tab(), "📜 History")
+        self.tabs.addTab(self.create_settings_tab(), "⚙️ Settings")
+        content_layout.addWidget(self.tabs)
+        
+        main_layout.addWidget(content_widget)
+        
+        # Modern status bar
+        self.statusBar().setStyleSheet("""
+            QStatusBar {
+                background: rgba(102, 126, 234, 0.05);
+                color: #666;
+                font-size: 11px;
+                padding: 5px;
+            }
+        """)
+        self.statusBar().showMessage("⌨️ " + config.SHORTCUTS_DISPLAY)
         
     def setup_shortcuts(self):
         """Setup keyboard shortcuts"""
@@ -329,55 +421,98 @@ class MainWindow(QMainWindow):
             event.ignore()
         
     def create_install_tab(self):
-        """Create the installation tab with batch installation support"""
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
+        """Create the installation tab with modern card-based design"""
+        from PyQt5.QtWidgets import QScrollArea
+        
+        # Create scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        
+        # Create content widget
+        content = QWidget()
+        layout = QVBoxLayout(content)
         layout.setSpacing(15)
+        layout.setContentsMargins(10, 10, 10, 10)
         
         # Initialize installation queue
         self.install_queue = []
         self.current_installing_index = -1
         
-        # Package selection group with batch support
-        select_group = QGroupBox("📁 Select Packages (Batch Installation)")
-        select_group.setToolTip("Add multiple packages to install them in sequence")
+        # Modern card-style group for package selection
+        select_group = QGroupBox()
+        select_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 10px;
+                padding: 15px;
+                margin: 2px;
+            }
+        """)
         select_layout = QVBoxLayout()
+        
+        # Section title
+        title_label = QLabel("📦 Add Packages")
+        title_label.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        title_label.setStyleSheet("color: #2c3e50; margin-bottom: 8px;")
+        select_layout.addWidget(title_label)
         
         # Buttons for adding packages
         button_row = QHBoxLayout()
         
-        self.browse_btn = QPushButton("📂 Add Package...")
-        self.browse_btn.setFixedWidth(180)
+        self.browse_btn = QPushButton("📂  Add Package")
+        self.browse_btn.setFixedHeight(40)
+        self.browse_btn.setFixedWidth(170)
+        self.browse_btn.setCursor(Qt.PointingHandCursor)
         self.browse_btn.setToolTip("Add one or more packages to the queue (Ctrl+O)")
         self.browse_btn.clicked.connect(self.browse_package)
         self.browse_btn.setStyleSheet("""
             QPushButton {
-                background-color: #3498db;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #667eea, stop:1 #764ba2);
                 color: white;
-                padding: 10px;
-                border-radius: 5px;
-                font-weight: bold;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 13px;
+                border: none;
             }
             QPushButton:hover {
-                background-color: #2980b9;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #5568d3, stop:1 #6a3f8f);
+            }
+            QPushButton:pressed {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #4a5bc4, stop:1 #5d3680);
             }
         """)
         button_row.addWidget(self.browse_btn)
         
-        self.clear_queue_btn = QPushButton("🗑️ Clear Queue")
+        self.clear_queue_btn = QPushButton("🗑️  Clear Queue")
+        self.clear_queue_btn.setFixedHeight(40)
         self.clear_queue_btn.setFixedWidth(150)
+        self.clear_queue_btn.setCursor(Qt.PointingHandCursor)
         self.clear_queue_btn.setToolTip("Remove all packages from the queue")
         self.clear_queue_btn.clicked.connect(self.clear_queue)
         self.clear_queue_btn.setStyleSheet("""
             QPushButton {
-                background-color: #e74c3c;
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                font-weight: bold;
+                background: white;
+                color: #e74c3c;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 13px;
+                border: 2px solid #e74c3c;
             }
             QPushButton:hover {
-                background-color: #c0392b;
+                background: #e74c3c;
+                color: white;
+            }
+            QPushButton:pressed {
+                background: #c0392b;
+                border-color: #c0392b;
             }
         """)
         button_row.addWidget(self.clear_queue_btn)
@@ -388,10 +523,38 @@ class MainWindow(QMainWindow):
         select_group.setLayout(select_layout)
         layout.addWidget(select_group)
         
-        # Installation Queue Display
-        queue_group = QGroupBox("📋 Installation Queue")
-        queue_group.setToolTip("Packages waiting to be installed")
+        # Installation Queue Card
+        queue_group = QGroupBox()
+        queue_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 10px;
+                padding: 15px;
+                margin: 2px;
+            }
+        """)
         queue_layout = QVBoxLayout()
+        
+        # Queue title with count
+        queue_header = QHBoxLayout()
+        queue_title = QLabel("📋 Installation Queue")
+        queue_title.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        queue_title.setStyleSheet("color: #2c3e50;")
+        queue_header.addWidget(queue_title)
+        
+        self.queue_status_label = QLabel("0 packages")
+        self.queue_status_label.setStyleSheet("""
+            color: white;
+            background: #667eea;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        """)
+        queue_header.addWidget(self.queue_status_label)
+        queue_header.addStretch()
+        queue_layout.addLayout(queue_header)
         
         self.queue_list = QListWidget()
         self.queue_list.setMaximumHeight(150)
@@ -400,82 +563,141 @@ class MainWindow(QMainWindow):
         self.queue_list.customContextMenuRequested.connect(self.show_queue_context_menu)
         self.queue_list.setStyleSheet("""
             QListWidget {
-                border: 2px solid #bdc3c7;
-                border-radius: 5px;
-                padding: 5px;
+                border: 2px solid #ecf0f1;
+                border-radius: 8px;
+                padding: 8px;
+                background: #fafafa;
+                margin-top: 10px;
             }
             QListWidget::item {
-                padding: 5px;
+                padding: 10px;
                 border-bottom: 1px solid #ecf0f1;
+                border-radius: 4px;
+                margin: 2px 0;
+            }
+            QListWidget::item:hover {
+                background: #f0f0f0;
+            }
+            QListWidget::item:selected {
+                background: rgba(102, 126, 234, 0.1);
+                color: #667eea;
+                border: 1px solid #667eea;
             }
         """)
         queue_layout.addWidget(self.queue_list)
         
-        # Queue status label
-        self.queue_status_label = QLabel("Queue: 0 packages")
-        self.queue_status_label.setStyleSheet("color: #7f8c8d; font-style: italic;")
-        queue_layout.addWidget(self.queue_status_label)
-        
         queue_group.setLayout(queue_layout)
         layout.addWidget(queue_group)
         
+        # Installation Progress Card
+        progress_group = QGroupBox()
+        progress_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 10px;
+                padding: 15px;
+                margin: 2px;
+            }
+        """)
+        progress_layout = QVBoxLayout()
+        
+        # Progress title
+        progress_title = QLabel("⚡ Installation Progress")
+        progress_title.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        progress_title.setStyleSheet("color: #2c3e50; margin-bottom: 8px;")
+        progress_layout.addWidget(progress_title)
+        
         # Installation steps display
-        steps_group = QGroupBox("🔄 Installation Steps")
-        steps_group.setToolTip("Current installation step and progress")
-        steps_layout = QVBoxLayout()
         self.steps_label = QLabel("Ready to install")
         self.steps_label.setAlignment(Qt.AlignCenter)
-        self.steps_label.setStyleSheet("font-size: 13px; font-weight: bold; padding: 8px;")
-        steps_layout.addWidget(self.steps_label)
-        steps_group.setLayout(steps_layout)
-        layout.addWidget(steps_group)
-        
-        # Progress group (now shows batch progress)
-        progress_group = QGroupBox("📊 Installation Progress")
-        progress_group.setToolTip("Real-time progress of current and overall installation")
-        progress_layout = QVBoxLayout()
+        self.steps_label.setStyleSheet("""
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            color: #667eea;
+        """)
+        progress_layout.addWidget(self.steps_label)
         
         # Current package progress
         current_label = QLabel("Current Package:")
+        current_label.setStyleSheet("color: #7f8c8d; font-size: 11px; margin-top: 15px;")
         progress_layout.addWidget(current_label)
         
         self.progress_bar = QProgressBar()
         self.progress_bar.setToolTip("Current package installation progress")
+        self.progress_bar.setFixedHeight(30)
         self.progress_bar.setStyleSheet("""
             QProgressBar {
-                border: 2px solid #bdc3c7;
-                border-radius: 5px;
+                border: none;
+                border-radius: 15px;
                 text-align: center;
-                height: 25px;
+                background: #ecf0f1;
+                color: white;
+                font-weight: 600;
+                font-size: 12px;
             }
             QProgressBar::chunk {
-                background-color: #27ae60;
-                border-radius: 3px;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #667eea, stop:1 #764ba2);
+                border-radius: 15px;
             }
         """)
         progress_layout.addWidget(self.progress_bar)
         
         # Overall batch progress
         self.batch_progress_label = QLabel("Overall: 0 of 0 packages")
-        self.batch_progress_label.setStyleSheet("font-weight: bold; margin-top: 5px;")
+        self.batch_progress_label.setStyleSheet("""
+            font-weight: 600;
+            margin-top: 8px;
+            color: #2c3e50;
+            font-size: 12px;
+        """)
         progress_layout.addWidget(self.batch_progress_label)
         
         self.status_label = QLabel("Ready to install")
         self.status_label.setAlignment(Qt.AlignCenter)
-        self.status_label.setStyleSheet("color: #7f8c8d; font-style: italic;")
+        self.status_label.setStyleSheet("color: #95a5a6; font-style: italic; font-size: 11px; margin-top: 5px;")
         progress_layout.addWidget(self.status_label)
         
         progress_group.setLayout(progress_layout)
         layout.addWidget(progress_group)
         
-        # Log output
-        log_group = QGroupBox("📝 Installation Log")
-        log_group.setToolTip("Detailed output from the installation process")
+        # Log output card
+        log_group = QGroupBox()
+        log_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: none;
+                border-radius: 10px;
+                padding: 15px;
+                margin: 2px;
+            }
+        """)
         log_layout = QVBoxLayout()
+        
+        log_title = QLabel("📝 Installation Log")
+        log_title.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        log_title.setStyleSheet("color: #2c3e50; margin-bottom: 8px;")
+        log_layout.addWidget(log_title)
+        
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
-        self.log_output.setMaximumHeight(120)
+        self.log_output.setMaximumHeight(100)
         self.log_output.setToolTip("Installation commands and output")
+        self.log_output.setStyleSheet("""
+            QTextEdit {
+                background: #2c3e50;
+                color: #ecf0f1;
+                border: none;
+                border-radius: 8px;
+                padding: 10px;
+                font-family: 'Consolas', 'Courier New', monospace;
+                font-size: 11px;
+            }
+        """)
         log_layout.addWidget(self.log_output)
         log_group.setLayout(log_layout)
         layout.addWidget(log_group)
@@ -484,56 +706,67 @@ class MainWindow(QMainWindow):
         button_layout = QHBoxLayout()
         button_layout.addStretch()
         
-        self.install_btn = QPushButton("✅ Start Batch Installation")
+        self.install_btn = QPushButton("✨  Start Installation")
         self.install_btn.setFixedHeight(45)
-        self.install_btn.setFixedWidth(250)
+        self.install_btn.setFixedWidth(230)
+        self.install_btn.setCursor(Qt.PointingHandCursor)
         self.install_btn.setEnabled(False)
         self.install_btn.setToolTip("Install all packages in the queue (Ctrl+I)")
         self.install_btn.clicked.connect(self.start_batch_installation)
         self.install_btn.setStyleSheet("""
             QPushButton {
-                background-color: #27ae60;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #11998e, stop:1 #38ef7d);
                 color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                font-size: 14px;
+                padding: 15px 30px;
+                border-radius: 10px;
+                font-size: 15px;
                 font-weight: bold;
+                border: none;
             }
             QPushButton:hover {
-                background-color: #229954;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #0e8070, stop:1 #2dd164);
             }
             QPushButton:pressed {
-                background-color: #1e8449;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #0c6b5f, stop:1 #26b856);
             }
             QPushButton:disabled {
-                background-color: #95a5a6;
+                background: #bdc3c7;
             }
         """)
         button_layout.addWidget(self.install_btn)
         
-        self.cancel_btn = QPushButton("⏹️ Cancel")
+        self.cancel_btn = QPushButton("⏹️  Cancel")
         self.cancel_btn.setFixedHeight(45)
         self.cancel_btn.setFixedWidth(130)
+        self.cancel_btn.setCursor(Qt.PointingHandCursor)
         self.cancel_btn.setEnabled(False)
         self.cancel_btn.setToolTip("Cancel the current batch installation")
         self.cancel_btn.clicked.connect(self.cancel_batch_installation)
         self.cancel_btn.setStyleSheet("""
             QPushButton {
-                background-color: #e74c3c;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                font-size: 14px;
+                background: white;
+                color: #e74c3c;
+                padding: 15px 30px;
+                border-radius: 10px;
+                font-size: 15px;
                 font-weight: bold;
+                border: 2px solid #e74c3c;
             }
             QPushButton:hover {
-                background-color: #c0392b;
+                background: #e74c3c;
+                color: white;
             }
             QPushButton:pressed {
-                background-color: #a93226;
+                background: #c0392b;
+                border-color: #c0392b;
             }
             QPushButton:disabled {
-                background-color: #95a5a6;
+                background: #ecf0f1;
+                color: #bdc3c7;
+                border-color: #bdc3c7;
             }
         """)
         button_layout.addWidget(self.cancel_btn)
@@ -542,7 +775,10 @@ class MainWindow(QMainWindow):
         layout.addLayout(button_layout)
         
         layout.addStretch()
-        return tab
+        
+        # Set content widget to scroll area
+        scroll.setWidget(content)
+        return scroll
     
     def create_uninstall_tab(self):
         """Create the uninstall tab for removing installed packages"""
@@ -1867,213 +2103,27 @@ class MainWindow(QMainWindow):
             self.save_settings()
     
     def apply_theme(self, theme="Light"):
-        """Apply the application theme"""
+        """Apply the application theme - simplified for modern design"""
         if theme == "Dark":
-            # Dark Theme
+            # Dark Theme - set base background
             self.setStyleSheet("""
                 QMainWindow {
-                    background-color: #1e1e1e;
-                    color: #e0e0e0;
+                    background-color: #1a1a2e;
                 }
                 QWidget {
-                    background-color: #1e1e1e;
-                    color: #e0e0e0;
-                }
-                QLabel {
-                    color: #e0e0e0;
-                }
-                QGroupBox {
-                    font-weight: bold;
-                    border: 2px solid #444444;
-                    border-radius: 8px;
-                    margin-top: 10px;
-                    padding-top: 10px;
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                    color: #e0e0e0;
-                }
-                QTabWidget::pane {
-                    border: 2px solid #444444;
-                    border-radius: 5px;
-                    background-color: #2d2d2d;
-                }
-                QTabBar::tab {
-                    background-color: #3d3d3d;
-                    color: #e0e0e0;
-                    padding: 10px 20px;
-                    margin-right: 2px;
-                    border-top-left-radius: 5px;
-                    border-top-right-radius: 5px;
-                }
-                QTabBar::tab:selected {
-                    background-color: #2d2d2d;
-                    border-bottom: 2px solid #3498db;
-                }
-                QTextEdit {
-                    background-color: #252525;
-                    color: #e0e0e0;
-                    border: 1px solid #444444;
-                    border-radius: 5px;
-                }
-                QListWidget {
-                    background-color: #252525;
-                    color: #e0e0e0;
-                    border: 2px solid #444444;
-                    border-radius: 5px;
-                    padding: 5px;
-                }
-                QListWidget::item {
-                    padding: 8px;
-                    border-bottom: 1px solid #3d3d3d;
-                }
-                QListWidget::item:selected {
-                    background-color: #3498db;
-                    color: white;
-                }
-                QComboBox {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                    border: 1px solid #444444;
-                    border-radius: 5px;
-                    padding: 5px;
-                }
-                QComboBox:hover {
-                    border: 1px solid #3498db;
-                }
-                QComboBox::drop-down {
-                    border: none;
-                }
-                QComboBox QAbstractItemView {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
-                    selection-background-color: #3498db;
-                }
-                QProgressBar {
-                    border: 2px solid #444444;
-                    border-radius: 5px;
-                    text-align: center;
-                    height: 25px;
-                    background-color: #252525;
-                    color: #e0e0e0;
-                }
-                QProgressBar::chunk {
-                    background-color: #27ae60;
-                    border-radius: 3px;
-                }
-                QStatusBar {
-                    background-color: #2d2d2d;
-                    color: #e0e0e0;
+                    background-color: #1a1a2e;
                 }
             """)
-
         else:
-            # Light Theme  
+            # Light Theme - set base background
             self.setStyleSheet("""
                 QMainWindow {
                     background-color: #f5f6fa;
-                    color: #2c3e50;
                 }
                 QWidget {
                     background-color: #f5f6fa;
-                    color: #2c3e50;
-                }
-                QLabel {
-                    color: #2c3e50;
-                }
-                QGroupBox {
-                    font-weight: bold;
-                    border: 2px solid #bdc3c7;
-                    border-radius: 8px;
-                    margin-top: 10px;
-                    padding-top: 10px;
-                    background-color: white;
-                    color: #2c3e50;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                    color: #2c3e50;
-                }
-                QTabWidget::pane {
-                    border: 2px solid #bdc3c7;
-                    border-radius: 5px;
-                    background-color: white;
-                }
-                QTabBar::tab {
-                    background-color: #ecf0f1;
-                    color: #2c3e50;
-                    padding: 10px 20px;
-                    margin-right: 2px;
-                    border-top-left-radius: 5px;
-                    border-top-right-radius: 5px;
-                }
-                QTabBar::tab:selected {
-                    background-color: white;
-                    border-bottom: 2px solid #3498db;
-                }
-                QTextEdit {
-                    background-color: white;
-                    color: #2c3e50;
-                    border: 1px solid #bdc3c7;
-                    border-radius: 5px;
-                }
-                QListWidget {
-                    background-color: white;
-                    color: #2c3e50;
-                    border: 2px solid #bdc3c7;
-                    border-radius: 5px;
-                    padding: 5px;
-                }
-                QListWidget::item {
-                    padding: 8px;
-                    border-bottom: 1px solid #ecf0f1;
-                }
-                QListWidget::item:selected {
-                    background-color: #3498db;
-                    color: white;
-                }
-                QComboBox {
-                    background-color: white;
-                    color: #2c3e50;
-                    border: 1px solid #bdc3c7;
-                    border-radius: 5px;
-                    padding: 5px;
-                }
-                QComboBox:hover {
-                    border: 1px solid #3498db;
-                }
-                QComboBox::drop-down {
-                    border: none;
-                }
-                QComboBox QAbstractItemView {
-                    background-color: white;
-                    color: #2c3e50;
-                    selection-background-color: #3498db;
-                }
-                QProgressBar {
-                    border: 2px solid #bdc3c7;
-                    border-radius: 5px;
-                    text-align: center;
-                    height: 25px;
-                    background-color: white;
-                    color: #2c3e50;
-                }
-                QProgressBar::chunk {
-                    background-color: #27ae60;
-                    border-radius: 3px;
-                }
-                QStatusBar {
-                    background-color: white;
-                    color: #2c3e50;
                 }
             """)
-
     
     def load_settings(self):
         """Load application settings"""
