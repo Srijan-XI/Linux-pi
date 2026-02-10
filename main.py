@@ -858,6 +858,10 @@ class MainWindow(QMainWindow):
         
         # Set content widget to scroll area
         scroll.setWidget(content)
+        
+        # Initialize queue display to show empty state
+        self.update_queue_display()
+        
         return scroll
     
     def create_uninstall_tab(self):
